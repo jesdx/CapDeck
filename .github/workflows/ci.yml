@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # macos-15 runners ship Xcode 16 as the default toolchain, which satisfies
+      # the macOS 14 deployment target and Swift 6. Pin a version here if needed.
+      - name: Show versions
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Build
+        run: |
+          xcodebuild -project CapDeck.xcodeproj -scheme CapDeck \
+            -destination 'platform=macOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Test
+        run: |
+          xcodebuild -project CapDeck.xcodeproj -scheme CapDeck \
+            -destination 'platform=macOS' \
+            -only-testing:CapDeckTests \
+            CODE_SIGNING_ALLOWED=NO \
+            test
+
+  lint:
+    name: SwiftLint & SwiftFormat
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: brew install swiftlint swiftformat
+
+      - name: SwiftFormat (lint mode)
+        run: swiftformat --lint .
+
+      - name: SwiftLint
+        run: swiftlint

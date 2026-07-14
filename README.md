@@ -172,8 +172,18 @@ The signing key stays in the macOS Keychain. Only the public EdDSA key is
 embedded in the app. Public distribution still requires a Developer ID and
 notarization for a normal Gatekeeper experience.
 
-## Product Direction
+## Contributing
 
-The initial goal is to build the best screenshot workflow for the owner's daily
-use. A public, open-source, or commercial release may be considered only after
-the app becomes stable and genuinely useful.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to
+build, test, and open a pull request, and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+for community expectations.
+
+Note on updates: the Sparkle feed (`SUFeedURL`) and public EdDSA key
+(`SUPublicEDKey`) in `CapDeck/Info.plist` point at this project's own release
+channel. If you fork CapDeck and want working self-updates, replace them with
+your own feed and signing key. Local builds work without any signing key — see
+the build instructions above.
+
+## License
+
+CapDeck is released under the [MIT License](LICENSE).

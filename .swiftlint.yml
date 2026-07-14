@@ -1,7 +1,7 @@
 included:
-  - LinapX
-  - LinapXTests
-  - LinapXUITests
+  - CapDeck
+  - CapDeckTests
+  - CapDeckUITests
 
 excluded:
   - .build

@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a problem with CapDeck
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please do **not** attach screenshots that
+        contain sensitive content.
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS version
+      placeholder: "e.g. 14.5"
+    validations:
+      required: true
+  - type: input
+    id: capdeck-version
+    attributes:
+      label: CapDeck version
+      description: See Settings → General → Current version.
+      placeholder: "e.g. 1.2.2 (Build 1)"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. …
+        2. …
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
