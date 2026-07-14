@@ -4,6 +4,19 @@
 
 _No unreleased changes._
 
+## 1.2.3 — 2026-07-15
+
+### Fixed
+
+- A capture shortcut no longer cancels an in-progress Save dialog. When the
+  Preview, Annotation editor, or History window has a save sheet open, a new
+  capture request is ignored instead of silently tearing the sheet down.
+
+### Changed
+
+- Moved native windowing code into per-feature presenters so Services stay
+  focused on system access. No user-visible behavior change.
+
 ## 1.2.2 — 2026-07-14
 
 ### Changed
