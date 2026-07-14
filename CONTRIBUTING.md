@@ -6,7 +6,8 @@ build, test, and submit changes.
 ## Requirements
 
 - macOS 14 or newer (required by `SCScreenshotManager`)
-- Xcode 16 or newer with the macOS SDK
+- Xcode 26 or newer (Swift 6.2). CapDeck relies on Swift 6.2's concurrency
+  model; earlier toolchains reject the build.
 - [SwiftFormat](https://github.com/nicklockwood/SwiftFormat) and
   [SwiftLint](https://github.com/realm/SwiftLint) for style checks
 

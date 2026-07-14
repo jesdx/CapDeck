@@ -10,18 +10,24 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Pinned so CI matches the development toolchain. CapDeck targets Swift 6.2,
+  # which ships with Xcode 26; older toolchains reject its concurrency model.
+  SWIFTFORMAT_VERSION: "0.62.1"
+  SWIFTLINT_VERSION: "0.65.0"
+
 jobs:
   build-test:
     name: Build & Test
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # macos-15 runners ship Xcode 16 as the default toolchain, which satisfies
-      # the macOS 14 deployment target and Swift 6. Pin a version here if needed.
-      - name: Show versions
+      - name: Select Xcode 26
         run: |
+          ls -d /Applications/Xcode*.app
+          latest=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$latest" ]; then sudo xcode-select -s "$latest/Contents/Developer"; fi
           xcodebuild -version
           swift --version
 
@@ -42,13 +48,20 @@ jobs:
 
   lint:
     name: SwiftLint & SwiftFormat
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install tools
-        run: brew install swiftlint swiftformat
+      - name: Install pinned linters
+        run: |
+          curl -fsSL "https://github.com/nicklockwood/SwiftFormat/releases/download/${SWIFTFORMAT_VERSION}/swiftformat.zip" -o swiftformat.zip
+          unzip -oq swiftformat.zip -d swiftformat-bin
+          sudo install "$(find swiftformat-bin -type f -name swiftformat | head -1)" /usr/local/bin/swiftformat
+          curl -fsSL "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip" -o swiftlint.zip
+          unzip -oq swiftlint.zip -d swiftlint-bin
+          sudo install "$(find swiftlint-bin -type f -name swiftlint | head -1)" /usr/local/bin/swiftlint
+          swiftformat --version
+          swiftlint --version
 
       - name: SwiftFormat (lint mode)
         run: swiftformat --lint .

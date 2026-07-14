@@ -69,6 +69,9 @@ the generated Xcode project remains buildable and testable.
 
 ## Build
 
+Building requires **Xcode 26 or newer** (Swift 6.2) on macOS 14+. CapDeck uses
+Swift 6.2's concurrency model, so earlier toolchains will not compile it.
+
 1. Open `CapDeck.xcodeproj` in Xcode.
 2. Select the `CapDeck` scheme.
 3. Choose a local Mac destination.
