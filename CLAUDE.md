@@ -74,4 +74,4 @@ Preview uses two AppKit panels: a non-activating bottom-right thumbnail (lifetim
 
 ## Reference docs
 
-`ARCHITECTURE.md` (authoritative design + risks), `CODING_GUIDELINES.md`, `PRODUCT_REQUIREMENTS.md` (record user-visible behavior here), `TASKS.md` (update on scope/status change), `STATUS.md`, `ACCEPTANCE.md`.
+Project docs live under `docs/`: `docs/ARCHITECTURE.md` (authoritative design + risks), `docs/CODING_GUIDELINES.md`, `docs/PRODUCT_REQUIREMENTS.md` (record user-visible behavior here), `docs/TASKS.md` (update on scope/status change), `docs/STATUS.md`, `docs/ACCEPTANCE.md`.

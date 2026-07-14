@@ -52,7 +52,7 @@ swiftlint
 
 ## Architecture
 
-Please read [`ARCHITECTURE.md`](ARCHITECTURE.md) before making structural
+Please read [`ARCHITECTURE.md`](docs/ARCHITECTURE.md) before making structural
 changes. The layering is intentional and strict:
 
 > Views render state and emit intent; Coordinators own workflow ordering and

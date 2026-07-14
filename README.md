@@ -26,12 +26,12 @@ CapDeck in Applications and choose **Open**. You can also download the latest
 
 ## Status
 
-CapDeck V1.2.2 has a complete personal native capture, clipboard, preview,
+CapDeck V1.2.3 has a complete personal native capture, clipboard, preview,
 saving, annotation, and session-history workflow. The V1 engineering scope is
 100% complete as of 2026-07-14. Three external compatibility checks have been
 handed off for owner review because they require external paste destinations,
 physical display changes, or additional macOS hardware. See the
-[implementation status](STATUS.md) for the current breakdown and verification
+[implementation status](docs/STATUS.md) for the current breakdown and verification
 snapshot.
 
 ## MVP
@@ -56,30 +56,27 @@ currently targets macOS 14 or later.
 
 ```text
 CapDeck/
-├── PROJECT_OVERVIEW.md
-├── PRODUCT_REQUIREMENTS.md
-├── ARCHITECTURE.md
-├── CODING_GUIDELINES.md
-├── TASKS.md
-├── README.md
+├── README.md · CHANGELOG.md · LICENSE · CLAUDE.md
+├── docs/                # architecture, product, status, guidelines
+├── Scripts/             # build & release helpers
 ├── CapDeck.xcodeproj
-├── CapDeck/
+├── CapDeck/             # app source (App, Features, Services, Models)
 ├── CapDeckTests/
 └── CapDeckUITests/
 ```
 
-The test target directories are retained alongside the requested core layout so
-the generated Xcode project remains buildable and testable.
+Project documentation lives under `docs/`; see [Documentation](#documentation)
+below.
 
 ## Documentation
 
-- [Project overview](PROJECT_OVERVIEW.md)
-- [Product requirements](PRODUCT_REQUIREMENTS.md)
-- [Architecture](ARCHITECTURE.md)
-- [Coding guidelines](CODING_GUIDELINES.md)
-- [Tasks and roadmap](TASKS.md)
-- [Implementation status](STATUS.md)
-- [Capture and preview acceptance](ACCEPTANCE.md)
+- [Project overview](docs/PROJECT_OVERVIEW.md)
+- [Product requirements](docs/PRODUCT_REQUIREMENTS.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Coding guidelines](docs/CODING_GUIDELINES.md)
+- [Tasks and roadmap](docs/TASKS.md)
+- [Implementation status](docs/STATUS.md)
+- [Capture and preview acceptance](docs/ACCEPTANCE.md)
 
 ## Build
 
@@ -167,7 +164,7 @@ xcodebuild -project CapDeck.xcodeproj -scheme CapDeck \
   -destination 'platform=macOS' -only-testing:CapDeckTests test
 ```
 
-Build the local V1.2.2 release archive with:
+Build the local V1.2.3 release archive with:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
