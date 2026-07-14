@@ -1,0 +1,61 @@
+included:
+  - LinapX
+  - LinapXTests
+  - LinapXUITests
+
+excluded:
+  - .build
+  - DerivedData
+  - Scripts
+
+analyzer_rules:
+  - unused_declaration
+  - unused_import
+
+opt_in_rules:
+  - array_init
+  - closure_spacing
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - empty_count
+  - empty_string
+  - first_where
+  - force_unwrapping
+  - last_where
+  - legacy_multiple
+  - modifier_order
+  - overridden_super_call
+  - prefer_zero_over_explicit_init
+  - sorted_first_last
+  - toggle_bool
+  - unneeded_parentheses_in_closure_argument
+
+disabled_rules:
+  - todo
+
+line_length:
+  warning: 110
+  error: 140
+  ignores_comments: true
+  ignores_urls: true
+
+file_length:
+  warning: 1_400
+  error: 1_700
+
+type_body_length:
+  warning: 500
+  error: 700
+
+function_body_length:
+  warning: 80
+  error: 120
+
+identifier_name:
+  min_length: 2
+  excluded:
+    - id
+    - x
+    - y
+
+reporter: xcode
