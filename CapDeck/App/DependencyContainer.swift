@@ -26,7 +26,7 @@ final class DependencyContainer: ObservableObject {
         let resolvedPermissionService = permissionService ?? ScreenCapturePermissionService()
         let resolvedSelectionPresenter =
             selectionPresenter
-            ?? CaptureSelectionPresenter(displayService: resolvedDisplayService)
+                ?? CaptureSelectionPresenter(displayService: resolvedDisplayService)
         let resolvedCaptureService = captureService ?? ScreenCaptureService()
         let resolvedClipboardService = clipboardService ?? PasteboardClipboardService()
         let resolvedSaveService = CaptureFileService()
@@ -94,5 +94,4 @@ final class DependencyContainer: ObservableObject {
         return environment["CAPDECK_UI_TESTING"] != "1"
             && environment["XCTestConfigurationFilePath"] == nil
     }
-
 }

@@ -146,7 +146,7 @@ final class CaptureCoordinator: ObservableObject {
         // window, tearing it down here would silently cancel their in-progress
         // save, so ignore the request instead (as with an in-flight capture).
         guard !previewPresenter.isPresentingModalSheet,
-            !historyPresenter.isPresentingModalSheet
+              !historyPresenter.isPresentingModalSheet
         else {
             Self.logger.notice("Capture request ignored while a save dialog is open")
             return
@@ -252,7 +252,11 @@ final class CaptureCoordinator: ObservableObject {
 
             let elapsed = startedAt.duration(to: .now)
             Self.logger.notice(
-                "Capture completed mode=\(String(describing: mode), privacy: .public) size=\(result.pixelWidth, privacy: .public)x\(result.pixelHeight, privacy: .public) elapsed=\(String(describing: elapsed), privacy: .public)"
+                """
+                Capture completed mode=\(String(describing: mode), privacy: .public) \
+                size=\(result.pixelWidth, privacy: .public)x\(result.pixelHeight, privacy: .public) \
+                elapsed=\(String(describing: elapsed), privacy: .public)
+                """
             )
 
             if let clipboardError {

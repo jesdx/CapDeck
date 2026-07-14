@@ -1,10 +1,9 @@
 import AppKit
+@testable import CapDeck
 import Carbon.HIToolbox
 import CoreGraphics
 import Foundation
 import Testing
-
-@testable import CapDeck
 
 struct CapturePreviewCompletionPolicyTests {
     @Test
@@ -30,9 +29,9 @@ struct GlobalShortcutServiceTests {
     func registersEveryDefaultShortcutAndRoutesActions() throws {
         let registrar = GlobalShortcutRegistrarFake()
         var receivedActions: [GlobalShortcutAction] = []
-        let service = GlobalShortcutService(
+        let service = try GlobalShortcutService(
             registrar: registrar,
-            defaults: try makeShortcutDefaults()
+            defaults: makeShortcutDefaults()
         ) { action in
             receivedActions.append(action)
         }
@@ -49,9 +48,9 @@ struct GlobalShortcutServiceTests {
     @Test
     func publishesRegistrationConflicts() throws {
         let registrar = GlobalShortcutRegistrarFake(conflict: .captureFullScreen)
-        let service = GlobalShortcutService(
+        let service = try GlobalShortcutService(
             registrar: registrar,
-            defaults: try makeShortcutDefaults()
+            defaults: makeShortcutDefaults()
         ) { _ in }
 
         service.start()
@@ -110,7 +109,7 @@ struct GlobalShortcutServiceTests {
 struct AppSettingsTests {
     @Test
     func usesClipboardFirstSafeDefaults() throws {
-        let settings = AppSettings(defaults: try makeDefaults())
+        let settings = try AppSettings(defaults: makeDefaults())
 
         #expect(settings.isAutoCopyEnabled)
         #expect(settings.savePolicy == .never)
@@ -167,7 +166,7 @@ struct AppSettingsTests {
 
     @Test
     func appliesAIWorkflowPresetWithoutChangingCaptureDelay() throws {
-        let settings = AppSettings(defaults: try makeDefaults())
+        let settings = try AppSettings(defaults: makeDefaults())
         settings.isAutoCopyEnabled = false
         settings.savePolicy = .always
         settings.previewPolicy = .never
@@ -182,7 +181,7 @@ struct AppSettingsTests {
 
     @Test
     func restoreDefaultsResetsCaptureAndPostCapturePreferences() throws {
-        let settings = AppSettings(defaults: try makeDefaults())
+        let settings = try AppSettings(defaults: makeDefaults())
         settings.isAutoCopyEnabled = false
         settings.savePolicy = .always
         settings.previewPolicy = .never
@@ -354,7 +353,7 @@ struct CaptureCoordinatorTests {
 
         #expect(
             fixture.captureService.requests == [
-                CaptureRequest(mode: .fullScreen, displayID: 3)
+                CaptureRequest(mode: .fullScreen, displayID: 3),
             ]
         )
         #expect(fixture.selectionService.displaySelectionCount == 1)
@@ -559,7 +558,7 @@ struct CaptureCoordinatorTests {
         #expect(fixture.selectionService.displaySelectionCount == 0)
         #expect(
             fixture.captureService.requests == [
-                CaptureRequest(mode: .fullScreen, displayID: 2)
+                CaptureRequest(mode: .fullScreen, displayID: 2),
             ]
         )
     }
@@ -614,14 +613,14 @@ struct CaptureCoordinatorTests {
         #expect(fixture.selectionService.windowSelectionCount == 0)
         #expect(
             fixture.captureService.requests == [
-                CaptureRequest(mode: .window, windowID: 99)
+                CaptureRequest(mode: .window, windowID: 99),
             ]
         )
         #expect(fixture.clipboardService.writeCount == 1)
     }
 
     @Test
-    func refreshWindowListPublishesCapturableWindows() async throws {
+    func refreshWindowListPublishesCapturableWindows() throws {
         let fixture = try makeFixture(autoCopy: true, permissionGranted: true)
 
         fixture.coordinator.refreshAvailableWindows()
@@ -645,7 +644,7 @@ struct CaptureCoordinatorTests {
 
         let permissionService = PermissionServiceFake(isAuthorized: permissionGranted)
         let selectionService = SelectionServiceFake()
-        let captureService = CaptureServiceFake(result: try makeCaptureResult())
+        let captureService = try CaptureServiceFake(result: makeCaptureResult())
         let clipboardService = ClipboardServiceFake()
         let saveService = SaveServiceFake(outcome: saveOutcome)
         let previewService = PreviewServiceFake()
@@ -701,9 +700,9 @@ struct CaptureHistoryStoreTests {
     func retainsNewestEntriesWithinTheCountLimit() throws {
         let store = CaptureHistoryStore(maximumCount: 3, maximumPixelBytes: .max)
 
-        for second in 0..<5 {
-            store.record(
-                try makeResult(width: 2, height: 2, timestamp: Date(timeIntervalSince1970: Double(second))),
+        for second in 0 ..< 5 {
+            try store.record(
+                makeResult(width: 2, height: 2, timestamp: Date(timeIntervalSince1970: Double(second))),
                 saveOutcome: .skipped
             )
         }
@@ -723,8 +722,8 @@ struct CaptureHistoryStoreTests {
         )
 
         store.record(sample, saveOutcome: .skipped)
-        store.record(try makeResult(width: 20, height: 20), saveOutcome: .skipped)
-        store.record(try makeResult(width: 20, height: 20), saveOutcome: .skipped)
+        try store.record(makeResult(width: 20, height: 20), saveOutcome: .skipped)
+        try store.record(makeResult(width: 20, height: 20), saveOutcome: .skipped)
 
         #expect(store.entries.count == 2)
         #expect(store.estimatedPixelBytes <= entryBytes * 2)
@@ -734,7 +733,7 @@ struct CaptureHistoryStoreTests {
     func savedReferenceIsMetadataOnlyAndClearReleasesSessionHistory() throws {
         let store = CaptureHistoryStore()
         let url = URL(fileURLWithPath: "/tmp/user-selected/CapDeck.png")
-        store.record(try makeResult(width: 4, height: 3), saveOutcome: .saved(url))
+        try store.record(makeResult(width: 4, height: 3), saveOutcome: .saved(url))
 
         #expect(store.entries.first?.savedURL == url)
         store.clear()
@@ -758,8 +757,8 @@ struct CaptureHistoryStoreTests {
                 bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
             )
         )
-        return CaptureResult(
-            image: try #require(context.makeImage()),
+        return try CaptureResult(
+            image: #require(context.makeImage()),
             displayID: 1,
             timestamp: timestamp
         )
@@ -794,8 +793,8 @@ struct CaptureSavingTests {
                 bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
             )
         )
-        let result = CaptureResult(
-            image: try #require(context.makeImage()),
+        let result = try CaptureResult(
+            image: #require(context.makeImage()),
             displayID: 1,
             timestamp: Date()
         )
@@ -813,7 +812,7 @@ struct CaptureSavingTests {
             )
         }
 
-        for _ in 0..<100 where parent.attachedSheet == nil {
+        for _ in 0 ..< 100 where parent.attachedSheet == nil {
             try await Task.sleep(for: .milliseconds(20))
         }
 
@@ -861,7 +860,8 @@ struct CaptureSavingTests {
                 bytesPerRow: 0,
                 space: CGColorSpaceCreateDeviceRGB(),
                 bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-            ))
+            )
+        )
         let image = try #require(context.makeImage())
 
         for format in ImageFormat.allCases {
@@ -921,8 +921,8 @@ struct CaptureSavingTests {
                 bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
             )
         )
-        let result = CaptureResult(
-            image: try #require(context.makeImage()),
+        let result = try CaptureResult(
+            image: #require(context.makeImage()),
             displayID: 1,
             timestamp: Date()
         )
@@ -950,8 +950,8 @@ struct CaptureSavingTests {
         let context = try #require(
             CGContext(
                 data: nil,
-                width: 3_840,
-                height: 2_160,
+                width: 3840,
+                height: 2160,
                 bitsPerComponent: 8,
                 bytesPerRow: 0,
                 space: CGColorSpaceCreateDeviceRGB(),
@@ -959,7 +959,7 @@ struct CaptureSavingTests {
             )
         )
         context.setFillColor(CGColor(red: 0.1, green: 0.4, blue: 0.8, alpha: 1))
-        context.fill(CGRect(x: 0, y: 0, width: 3_840, height: 2_160))
+        context.fill(CGRect(x: 0, y: 0, width: 3840, height: 2160))
         let image = try #require(context.makeImage())
 
         let start = ContinuousClock.now
@@ -1109,7 +1109,7 @@ struct CaptureThumbnailLayoutTests {
 struct AnnotationDocumentTests {
     @Test
     func rectangleIsClippedToSourceBounds() throws {
-        let document = AnnotationDocument(sourceImage: try makeWhiteImage(width: 20, height: 10))
+        let document = try AnnotationDocument(sourceImage: makeWhiteImage(width: 20, height: 10))
 
         let added = document.addRectangle(
             CGRect(x: -5, y: -2, width: 16, height: 8),
@@ -1127,7 +1127,7 @@ struct AnnotationDocumentTests {
 
     @Test
     func undoRedoAndNewEditMaintainCommandHistory() throws {
-        let document = AnnotationDocument(sourceImage: try makeWhiteImage(width: 40, height: 30))
+        let document = try AnnotationDocument(sourceImage: makeWhiteImage(width: 40, height: 30))
         document.addRectangle(CGRect(x: 2, y: 2, width: 10, height: 8))
         document.addRectangle(CGRect(x: 15, y: 10, width: 12, height: 9))
 
@@ -1185,7 +1185,7 @@ struct AnnotationDocumentTests {
 
     @Test
     func textCanBeEditedDeletedAndRestored() throws {
-        let document = AnnotationDocument(sourceImage: try makeWhiteImage(width: 120, height: 80))
+        let document = try AnnotationDocument(sourceImage: makeWhiteImage(width: 120, height: 80))
         let textID = try #require(
             document.addText("Before", in: CGRect(x: 10, y: 10, width: 90, height: 30))
         )
@@ -1252,17 +1252,17 @@ struct AnnotationDocumentTests {
     @Test
     func canvasGeometryFitsAndMapsRetinaSizedImages() {
         let fitted = AnnotationCanvasGeometry.fittedRect(
-            imageSize: CGSize(width: 3_024, height: 1_964),
+            imageSize: CGSize(width: 3024, height: 1964),
             canvasSize: CGSize(width: 900, height: 700)
         )
         let center = AnnotationCanvasGeometry.imagePoint(
             from: CGPoint(x: fitted.midX, y: fitted.midY),
             fittedRect: fitted,
-            imageSize: CGSize(width: 3_024, height: 1_964)
+            imageSize: CGSize(width: 3024, height: 1964)
         )
 
         #expect(fitted.width == 900)
-        #expect(abs(center.x - 1_512) < 0.001)
+        #expect(abs(center.x - 1512) < 0.001)
         #expect(abs(center.y - 982) < 0.001)
     }
 
@@ -1273,10 +1273,10 @@ struct AnnotationDocumentTests {
         let point = AnnotationCanvasGeometry.imagePoint(
             from: CGPoint(x: 500, y: -100),
             fittedRect: fitted,
-            imageSize: CGSize(width: 1_000, height: 500)
+            imageSize: CGSize(width: 1000, height: 500)
         )
 
-        #expect(point == CGPoint(x: 1_000, y: 0))
+        #expect(point == CGPoint(x: 1000, y: 0))
     }
 
     private func makeWhiteImage(width: Int, height: Int) throws -> CGImage {
@@ -1348,14 +1348,14 @@ struct AnnotationDocumentTests {
     private func redPixelCount(in image: CGImage) -> Int {
         let bitmap = NSBitmapImageRep(cgImage: image)
         var count = 0
-        for y in 0..<bitmap.pixelsHigh {
-            for x in 0..<bitmap.pixelsWide {
+        for y in 0 ..< bitmap.pixelsHigh {
+            for x in 0 ..< bitmap.pixelsWide {
                 guard
                     let color = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB)
                 else { continue }
                 if color.redComponent > 0.8,
-                    color.greenComponent < 0.4,
-                    color.blueComponent < 0.4
+                   color.greenComponent < 0.4,
+                   color.blueComponent < 0.4
                 {
                     count += 1
                 }
@@ -1538,7 +1538,9 @@ private final class LaunchAtLoginControllerFake: LaunchAtLoginControlling {
 
     func register() throws {
         registerCount += 1
-        if let registerError { throw registerError }
+        if let registerError {
+            throw registerError
+        }
         status = .enabled
     }
 
@@ -1571,7 +1573,7 @@ private final class SelectionServiceFake: CaptureSelectionPresenting {
                 id: 42,
                 applicationName: "Example",
                 windowTitle: "Document"
-            )
+            ),
         ]
     }
 
@@ -1629,7 +1631,9 @@ private final class CaptureServiceFake: ScreenCapturing {
     func capture(_ request: CaptureRequest) async throws -> CaptureResult {
         requests.append(request)
         onCapture?()
-        if let error { throw error }
+        if let error {
+            throw error
+        }
         return result
     }
 }
@@ -1639,9 +1643,11 @@ private final class ClipboardServiceFake: ClipboardWriting {
     private(set) var writeCount = 0
     var error: Error?
 
-    func write(_ result: CaptureResult) throws {
+    func write(_: CaptureResult) throws {
         writeCount += 1
-        if let error { throw error }
+        if let error {
+            throw error
+        }
     }
 }
 
@@ -1655,18 +1661,18 @@ private final class SaveServiceFake: CaptureSaving {
     }
 
     func process(
-        _ result: CaptureResult,
+        _: CaptureResult,
         policy: SavePolicy,
-        configuration: CaptureSaveConfiguration
+        configuration _: CaptureSaveConfiguration
     ) async -> CaptureSaveOutcome {
         processedPolicies.append(policy)
         return outcome
     }
 
     func saveAs(
-        _ result: CaptureResult,
-        configuration: CaptureSaveConfiguration,
-        presentingWindow: NSWindow?
+        _: CaptureResult,
+        configuration _: CaptureSaveConfiguration,
+        presentingWindow _: NSWindow?
     ) async -> CaptureSaveOutcome {
         outcome
     }

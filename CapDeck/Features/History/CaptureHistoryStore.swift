@@ -30,7 +30,7 @@ protocol CaptureHistoryRecording: AnyObject {
 @MainActor
 final class CaptureHistoryStore: ObservableObject, CaptureHistoryRecording {
     static let defaultMaximumCount = 10
-    static let defaultMaximumPixelBytes = 256 * 1_024 * 1_024
+    static let defaultMaximumPixelBytes = 256 * 1024 * 1024
 
     @Published private(set) var entries: [CaptureHistoryEntry] = []
 
@@ -50,11 +50,10 @@ final class CaptureHistoryStore: ObservableObject, CaptureHistoryRecording {
     }
 
     func record(_ result: CaptureResult, saveOutcome: CaptureSaveOutcome) {
-        let savedURL: URL?
-        if case let .saved(url) = saveOutcome {
-            savedURL = url
+        let savedURL: URL? = if case let .saved(url) = saveOutcome {
+            url
         } else {
-            savedURL = nil
+            nil
         }
 
         entries.insert(
@@ -79,7 +78,7 @@ final class CaptureHistoryStore: ObservableObject, CaptureHistoryRecording {
 
         // Keep the newest capture even when a single unusually large image is
         // over budget, then evict older images until the store is bounded.
-        while entries.count > 1 && estimatedPixelBytes > maximumPixelBytes {
+        while entries.count > 1, estimatedPixelBytes > maximumPixelBytes {
             entries.removeLast()
         }
     }

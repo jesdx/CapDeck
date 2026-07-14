@@ -7,10 +7,18 @@ struct GlobalShortcut: Codable, Equatable, Hashable, Sendable {
 
     var displayValue: String {
         var value = ""
-        if modifiers & UInt32(controlKey) != 0 { value += "⌃" }
-        if modifiers & UInt32(optionKey) != 0 { value += "⌥" }
-        if modifiers & UInt32(shiftKey) != 0 { value += "⇧" }
-        if modifiers & UInt32(cmdKey) != 0 { value += "⌘" }
+        if modifiers & UInt32(controlKey) != 0 {
+            value += "⌃"
+        }
+        if modifiers & UInt32(optionKey) != 0 {
+            value += "⌥"
+        }
+        if modifiers & UInt32(shiftKey) != 0 {
+            value += "⇧"
+        }
+        if modifiers & UInt32(cmdKey) != 0 {
+            value += "⌘"
+        }
         return value + keyLabel
     }
 }
@@ -20,7 +28,9 @@ enum GlobalShortcutAction: UInt32, CaseIterable, Hashable, Identifiable, Sendabl
     case captureWindow = 2
     case captureFullScreen = 3
 
-    var id: UInt32 { rawValue }
+    var id: UInt32 {
+        rawValue
+    }
 
     var title: String {
         switch self {

@@ -20,9 +20,9 @@ enum PreviewPolicy: String, CaseIterable, Sendable {
 @MainActor
 final class AppSettings: ObservableObject {
     static let currentSchemaVersion = 1
-    // nonisolated so the nonisolated `Key` enum below (and non-main-actor
-    // callers) can reference this constant; older Swift 6.0 toolchains reject a
-    // main-actor-isolated default value in that nonisolated context.
+    /// nonisolated so the nonisolated `Key` enum below (and non-main-actor
+    /// callers) can reference this constant; older Swift 6.0 toolchains reject a
+    /// main-actor-isolated default value in that nonisolated context.
     nonisolated static let menuBarVisibilityDefaultsKey = "settings.menuBarIconVisible"
 
     private enum Key {
@@ -130,7 +130,7 @@ final class AppSettings: ObservableObject {
         jpegQuality = storedJPEGQuality > 0 ? min(storedJPEGQuality, 1) : 0.9
         filenamePattern =
             defaults.string(forKey: Key.filenamePattern)
-            ?? FilenamePattern.defaultValue
+                ?? FilenamePattern.defaultValue
         if defaults.object(forKey: Key.menuBarIconVisible) == nil {
             isMenuBarIconVisible = true
         } else {
@@ -202,22 +202,22 @@ final class AppSettings: ObservableObject {
         guard storedVersion < currentSchemaVersion else { return }
 
         if defaults.object(forKey: Key.savePolicy) == nil,
-            defaults.object(forKey: Key.legacyAutoSave) != nil
+           defaults.object(forKey: Key.legacyAutoSave) != nil
         {
             let policy: SavePolicy =
                 defaults.bool(forKey: Key.legacyAutoSave)
-                ? .always
-                : .never
+                    ? .always
+                    : .never
             defaults.set(policy.rawValue, forKey: Key.savePolicy)
         }
 
         if defaults.object(forKey: Key.previewPolicy) == nil,
-            defaults.object(forKey: Key.legacyPreviewEnabled) != nil
+           defaults.object(forKey: Key.legacyPreviewEnabled) != nil
         {
             let policy: PreviewPolicy =
                 defaults.bool(forKey: Key.legacyPreviewEnabled)
-                ? .always
-                : .never
+                    ? .always
+                    : .never
             defaults.set(policy.rawValue, forKey: Key.previewPolicy)
         }
 

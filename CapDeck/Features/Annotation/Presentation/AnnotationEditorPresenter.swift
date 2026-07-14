@@ -39,7 +39,7 @@ final class AnnotationEditorPresenter: NSObject, AnnotationEditing, NSWindowDele
             onCopy: { [weak self] in
                 guard let self else { return "Editor is no longer available" }
                 do {
-                    try clipboardService.write(try exportedResult(document, source: result))
+                    try clipboardService.write(exportedResult(document, source: result))
                     return "Copied annotated image"
                 } catch {
                     return error.localizedDescription
@@ -48,8 +48,8 @@ final class AnnotationEditorPresenter: NSObject, AnnotationEditing, NSWindowDele
             onSave: { [weak self] in
                 guard let self else { return "Editor is no longer available" }
                 do {
-                    let outcome = await saveService.saveAs(
-                        try exportedResult(document, source: result),
+                    let outcome = try await saveService.saveAs(
+                        exportedResult(document, source: result),
                         configuration: configurationProvider(),
                         presentingWindow: editorPanel
                     )
@@ -85,7 +85,7 @@ final class AnnotationEditorPresenter: NSObject, AnnotationEditing, NSWindowDele
         panel.minSize = NSSize(width: 780, height: 560)
 
         let panelSize = NSSize(
-            width: min(1_180, max(820, visibleFrame.width * 0.82)),
+            width: min(1180, max(820, visibleFrame.width * 0.82)),
             height: min(820, max(600, visibleFrame.height * 0.82))
         )
         panel.setContentSize(panelSize)
@@ -118,8 +118,8 @@ final class AnnotationEditorPresenter: NSObject, AnnotationEditing, NSWindowDele
         _ document: AnnotationDocument,
         source: CaptureResult
     ) throws -> CaptureResult {
-        CaptureResult(
-            image: try document.renderedImage(),
+        try CaptureResult(
+            image: document.renderedImage(),
             displayID: source.displayID,
             timestamp: source.timestamp
         )
@@ -144,7 +144,9 @@ private enum AnnotationTool: String, CaseIterable, Identifiable {
     case blur
     case crop
 
-    var id: Self { self }
+    var id: Self {
+        self
+    }
 
     var title: String {
         switch self {
@@ -387,7 +389,8 @@ private struct AnnotationEditorView: View {
                             size: max(
                                 10,
                                 annotation.fontSize / imageSize.width * fittedRect.width
-                            ), weight: .bold)
+                            ), weight: .bold
+                        )
                     )
                     .foregroundStyle(annotationColor(annotation.color))
                     .frame(width: rect.width, height: rect.height, alignment: .topLeading)
@@ -433,7 +436,7 @@ private struct AnnotationEditorView: View {
     }
 
     @ViewBuilder
-    private func draftOverlay(fittedRect: CGRect) -> some View {
+    private func draftOverlay(fittedRect _: CGRect) -> some View {
         if let start = dragStart, let end = draftEnd {
             if selectedTool == .arrow {
                 arrowPath(from: start, to: end)
@@ -495,9 +498,13 @@ private struct AnnotationEditorView: View {
         selectedElementID = nil
         switch selectedTool {
         case .rectangle:
-            if document.addRectangle(rect) { statusText = "Rectangle added" }
+            if document.addRectangle(rect) {
+                statusText = "Rectangle added"
+            }
         case .arrow:
-            if document.addArrow(from: start, to: end) { statusText = "Arrow added" }
+            if document.addArrow(from: start, to: end) {
+                statusText = "Arrow added"
+            }
         case .text:
             let resolvedRect = textRect(from: rect, anchor: start)
             if let id = document.addText(textDraft, in: resolvedRect) {
@@ -507,9 +514,13 @@ private struct AnnotationEditorView: View {
                 statusText = "Enter text before adding a label"
             }
         case .blur:
-            if document.addBlur(rect) { statusText = "Blur region added" }
+            if document.addBlur(rect) {
+                statusText = "Blur region added"
+            }
         case .crop:
-            if document.setCrop(rect) { statusText = "Crop updated" }
+            if document.setCrop(rect) {
+                statusText = "Crop updated"
+            }
         }
     }
 

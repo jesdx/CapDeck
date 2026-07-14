@@ -23,7 +23,6 @@ opt_in_rules:
   - force_unwrapping
   - last_where
   - legacy_multiple
-  - modifier_order
   - overridden_super_call
   - prefer_zero_over_explicit_init
   - sorted_first_last
@@ -32,6 +31,12 @@ opt_in_rules:
 
 disabled_rules:
   - todo
+  # SwiftFormat (.swiftformat) is the single source of truth for formatting.
+  # Disable SwiftLint rules that conflict with it (e.g. SwiftFormat inserts
+  # trailing commas and wraps braces), so the two tools do not fight.
+  - trailing_comma
+  - opening_brace
+  - closure_parameter_position
 
 line_length:
   warning: 110
@@ -40,8 +45,8 @@ line_length:
   ignores_urls: true
 
 file_length:
-  warning: 1_400
-  error: 1_700
+  warning: 1400
+  error: 1800
 
 type_body_length:
   warning: 500

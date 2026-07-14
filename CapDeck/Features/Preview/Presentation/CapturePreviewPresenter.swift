@@ -96,8 +96,8 @@ final class CapturePreviewPresenter: NSObject, CapturePreviewPresenting, NSWindo
         let displayScale = targetDisplay?.nativeScale ?? 1
         let visibleFrame =
             targetDisplay?.screen.visibleFrame
-            ?? NSScreen.main?.visibleFrame
-            ?? CGRect(x: 0, y: 0, width: 900, height: 650)
+                ?? NSScreen.main?.visibleFrame
+                ?? CGRect(x: 0, y: 0, width: 900, height: 650)
         let thumbnailView = CaptureThumbnailView(
             image: result.image,
             onOpen: { [weak self] in
@@ -157,8 +157,8 @@ final class CapturePreviewPresenter: NSObject, CapturePreviewPresenting, NSWindo
         }
         let visibleFrame =
             targetDisplay?.screen.visibleFrame
-            ?? NSScreen.main?.visibleFrame
-            ?? CGRect(x: 0, y: 0, width: 900, height: 650)
+                ?? NSScreen.main?.visibleFrame
+                ?? CGRect(x: 0, y: 0, width: 900, height: 650)
         presentFullPreview(
             result,
             displayScale: targetDisplay?.nativeScale ?? 1,
@@ -180,8 +180,8 @@ final class CapturePreviewPresenter: NSObject, CapturePreviewPresenting, NSWindo
             displayScale: displayScale,
             onAnnotate: { [weak self] in
                 guard let self else { return }
-                self.dismiss()
-                self.annotationPresenter.present(result, visibleFrame: visibleFrame)
+                dismiss()
+                annotationPresenter.present(result, visibleFrame: visibleFrame)
             },
             onCopy: { [weak self] in
                 guard let self else { return false }
@@ -327,7 +327,9 @@ private enum PreviewZoomMode: String, CaseIterable, Identifiable {
     case fit
     case actual
 
-    var id: Self { self }
+    var id: Self {
+        self
+    }
 
     var title: String {
         switch self {
@@ -343,7 +345,9 @@ enum CapturePreviewCompletionPolicy {
     }
 
     nonisolated static func shouldCloseAfterSave(_ outcome: CaptureSaveOutcome) -> Bool {
-        if case .saved = outcome { return true }
+        if case .saved = outcome {
+            return true
+        }
         return false
     }
 }
@@ -467,7 +471,6 @@ private struct CapturePreviewView: View {
         .background(.background)
     }
 
-    @ViewBuilder
     private var previewCanvas: some View {
         GeometryReader { proxy in
             ZStack {

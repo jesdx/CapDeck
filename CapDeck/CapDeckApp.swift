@@ -1,12 +1,13 @@
 import AppKit
 import SwiftUI
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var isUITesting: Bool {
         ProcessInfo.processInfo.environment["CAPDECK_UI_TESTING"] == "1"
     }
 
-    func applicationWillFinishLaunching(_ notification: Notification) {
+    func applicationWillFinishLaunching(_: Notification) {
         NSApp.setActivationPolicy(isUITesting ? .regular : .accessory)
         NotificationCenter.default.addObserver(
             self,
@@ -16,11 +17,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
     }
 
-    func applicationShouldRestoreApplicationState(_ sender: NSApplication) -> Bool {
+    func applicationShouldRestoreApplicationState(_: NSApplication) -> Bool {
         false
     }
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    func applicationDidFinishLaunching(_: Notification) {
         if isUITesting {
             NSApp.setActivationPolicy(.regular)
             NSApp.activate(ignoringOtherApps: true)
@@ -34,12 +35,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(isVisible ? .accessory : .regular)
     }
 
-    func applicationShouldSaveApplicationState(_ sender: NSApplication) -> Bool {
+    func applicationShouldSaveApplicationState(_: NSApplication) -> Bool {
         false
     }
 
     func applicationShouldHandleReopen(
-        _ sender: NSApplication,
+        _: NSApplication,
         hasVisibleWindows flag: Bool
     ) -> Bool {
         guard !flag else { return true }
@@ -60,7 +61,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func windowWillClose(_ notification: Notification) {
         guard let window = notification.object as? NSWindow,
-            !(window is NSPanel)
+              !(window is NSPanel)
         else {
             return
         }

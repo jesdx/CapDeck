@@ -51,7 +51,9 @@ enum FilenamePattern {
     }
 
     static func render(_ pattern: String, date: Date) throws -> String {
-        if let error = validate(pattern) { throw error }
+        if let error = validate(pattern) {
+            throw error
+        }
 
         let dateFormatter = DateFormatter()
         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
@@ -66,9 +68,9 @@ enum FilenamePattern {
 
         return
             pattern
-            .replacingOccurrences(of: "{date}", with: dateValue)
-            .replacingOccurrences(of: "{time}", with: timeValue)
-            .replacingOccurrences(of: "{timestamp}", with: timestampValue)
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+                .replacingOccurrences(of: "{date}", with: dateValue)
+                .replacingOccurrences(of: "{time}", with: timeValue)
+                .replacingOccurrences(of: "{timestamp}", with: timestampValue)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

@@ -111,7 +111,7 @@ private func writeMenuBarAssets() throws {
         .appendingPathComponent("CapDeck/Assets.xcassets/CapDeckMenuBarLogo.imageset")
     let logicalSize = CGSize(width: 15, height: 15)
 
-    for scale in 1...3 {
+    for scale in 1 ... 3 {
         let data = try bitmap(logicalSize: logicalSize, scale: scale) {
             NSColor.clear.setFill()
             NSBezierPath(rect: CGRect(origin: .zero, size: logicalSize)).fill()
@@ -147,7 +147,7 @@ private func writeBrandAssets() throws {
     }
     let textSize = text.size(withAttributes: attributes)
 
-    for scale in 1...3 {
+    for scale in 1 ... 3 {
         let data = try bitmap(logicalSize: logicalSize, scale: scale) {
             let gradient = NSGradient(
                 starting: NSColor(srgbRed: 0.11, green: 0.11, blue: 0.115, alpha: 1),
@@ -180,7 +180,7 @@ private func writeAppLogoAssets() throws {
         .appendingPathComponent("CapDeck/Assets.xcassets/AppLogo.imageset")
     let logicalSize = CGSize(width: 24, height: 24)
 
-    for scale in 1...3 {
+    for scale in 1 ... 3 {
         let data = try bitmap(logicalSize: logicalSize, scale: scale) {
             NSColor.clear.setFill()
             NSBezierPath(rect: CGRect(origin: .zero, size: logicalSize)).fill()

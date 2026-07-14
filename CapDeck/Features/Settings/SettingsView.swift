@@ -200,7 +200,7 @@ struct SettingsView: View {
 
                 if settings.imageFormat == .jpeg {
                     HStack {
-                        Slider(value: $settings.jpegQuality, in: 0.1...1, step: 0.05) {
+                        Slider(value: $settings.jpegQuality, in: 0.1 ... 1, step: 0.05) {
                             Text("JPEG Quality")
                         }
                         Text("\(Int(settings.jpegQuality * 100))%")
@@ -288,7 +288,7 @@ struct SettingsView: View {
                     Text("Ask Every Time").tag(SavePolicy.askEveryTime)
                 }
 
-                if settings.savePolicy == .always && settings.saveFolderBookmark == nil {
+                if settings.savePolicy == .always, settings.saveFolderBookmark == nil {
                     Label("Choose a folder in Capture settings before using Always Save.", systemImage: "exclamationmark.triangle")
                         .font(.caption)
                         .foregroundStyle(.orange)

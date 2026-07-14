@@ -260,13 +260,13 @@ private final class CaptureSelectionSession {
                 return nil
             }
             if self?.mode == .window,
-                [UInt16(kVK_LeftArrow), UInt16(kVK_UpArrow)].contains(event.keyCode)
+               [UInt16(kVK_LeftArrow), UInt16(kVK_UpArrow)].contains(event.keyCode)
             {
                 self?.moveKeyboardWindowSelection(by: -1)
                 return nil
             }
             if self?.mode == .window,
-                [UInt16(kVK_RightArrow), UInt16(kVK_DownArrow)].contains(event.keyCode)
+               [UInt16(kVK_RightArrow), UInt16(kVK_DownArrow)].contains(event.keyCode)
             {
                 self?.moveKeyboardWindowSelection(by: 1)
                 return nil
@@ -321,7 +321,7 @@ private final class CaptureSelectionSession {
         }
 
         if let previousApplication,
-            previousApplication.processIdentifier != ProcessInfo.processInfo.processIdentifier
+           previousApplication.processIdentifier != ProcessInfo.processInfo.processIdentifier
         {
             previousApplication.activate(options: [])
         }
@@ -331,8 +331,13 @@ private final class CaptureSelectionSession {
 }
 
 private final class SelectionPanel: NSPanel {
-    override var canBecomeKey: Bool { true }
-    override var canBecomeMain: Bool { false }
+    override var canBecomeKey: Bool {
+        true
+    }
+
+    override var canBecomeMain: Bool {
+        false
+    }
 }
 
 @MainActor
@@ -390,13 +395,15 @@ private final class SelectionOverlayView: NSView {
     }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override var acceptsFirstResponder: Bool { true }
+    override var acceptsFirstResponder: Bool {
+        true
+    }
 
-    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+    override func acceptsFirstMouse(for _: NSEvent?) -> Bool {
         true
     }
 
@@ -532,8 +539,8 @@ private final class SelectionOverlayView: NSView {
 
         let outlineRect =
             mode == .fullScreen
-            ? bounds.insetBy(dx: 3, dy: 3)
-            : cutout
+                ? bounds.insetBy(dx: 3, dy: 3)
+                : cutout
         if let outlineRect, !outlineRect.isEmpty {
             NSColor.systemOrange.setStroke()
             let outline = NSBezierPath(roundedRect: outlineRect, xRadius: 4, yRadius: 4)

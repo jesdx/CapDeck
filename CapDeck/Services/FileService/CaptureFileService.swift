@@ -33,15 +33,14 @@ enum CaptureImageEncoder {
     ) throws -> Data {
         let encodingImage = imageForEncoding(image, format: format)
         let bitmap = NSBitmapImageRep(cgImage: encodingImage)
-        let data: Data?
-        switch format {
+        let data: Data? = switch format {
         case .png:
-            data = bitmap.representation(using: .png, properties: [:])
+            bitmap.representation(using: .png, properties: [:])
         case .jpeg:
-            data = bitmap.representation(
+            bitmap.representation(
                 using: .jpeg,
                 properties: [
-                    .compressionFactor: min(max(jpegQuality, 0.1), 1)
+                    .compressionFactor: min(max(jpegQuality, 0.1), 1),
                 ]
             )
         }
@@ -87,9 +86,11 @@ enum CollisionSafeFileURL {
         while true {
             let candidate =
                 folder
-                .appendingPathComponent("\(baseName)-\(counter)")
-                .appendingPathExtension(pathExtension)
-            if !fileManager.fileExists(atPath: candidate.path) { return candidate }
+                    .appendingPathComponent("\(baseName)-\(counter)")
+                    .appendingPathExtension(pathExtension)
+            if !fileManager.fileExists(atPath: candidate.path) {
+                return candidate
+            }
             counter += 1
         }
     }
@@ -193,7 +194,7 @@ final class CaptureFileService: CaptureSaving {
             panel.nameFieldStringValue = "\(filename).\(configuration.format.fileExtension)"
 
             if let bookmark = configuration.folderBookmark,
-                let folder = try? resolveFolder(bookmark)
+               let folder = try? resolveFolder(bookmark)
             {
                 panel.directoryURL = folder
             }
@@ -226,7 +227,9 @@ final class CaptureFileService: CaptureSaving {
         let folder = try resolveFolder(bookmark)
         let didAccess = folder.startAccessingSecurityScopedResource()
         defer {
-            if didAccess { folder.stopAccessingSecurityScopedResource() }
+            if didAccess {
+                folder.stopAccessingSecurityScopedResource()
+            }
         }
 
         let filename = try FilenamePattern.render(
@@ -235,8 +238,8 @@ final class CaptureFileService: CaptureSaving {
         )
         let proposedURL =
             folder
-            .appendingPathComponent(filename, isDirectory: false)
-            .appendingPathExtension(configuration.format.fileExtension)
+                .appendingPathComponent(filename, isDirectory: false)
+                .appendingPathExtension(configuration.format.fileExtension)
         let targetURL = CollisionSafeFileURL.make(
             from: proposedURL,
             fileManager: fileManager
@@ -252,7 +255,9 @@ final class CaptureFileService: CaptureSaving {
     ) async throws {
         let didAccess = url.startAccessingSecurityScopedResource()
         defer {
-            if didAccess { url.stopAccessingSecurityScopedResource() }
+            if didAccess {
+                url.stopAccessingSecurityScopedResource()
+            }
         }
 
         try await Task.detached(priority: .userInitiated) {

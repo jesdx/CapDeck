@@ -163,8 +163,13 @@ final class AnnotationDocument: ObservableObject {
         cropRect?.integral.size ?? imageBounds.size
     }
 
-    var canUndo: Bool { !undoStack.isEmpty }
-    var canRedo: Bool { !redoStack.isEmpty }
+    var canUndo: Bool {
+        !undoStack.isEmpty
+    }
+
+    var canRedo: Bool {
+        !redoStack.isEmpty
+    }
 
     func element(id: UUID?) -> AnnotationElement? {
         guard let id else { return nil }
@@ -269,7 +274,7 @@ final class AnnotationDocument: ObservableObject {
         guard let clipped = validRect(rect) else { return false }
         let resolvedRadius =
             radius
-            ?? max(12, min(imageBounds.width, imageBounds.height) * 0.018)
+                ?? max(12, min(imageBounds.width, imageBounds.height) * 0.018)
         commit {
             elements.append(.blur(BlurAnnotation(rect: clipped, radius: resolvedRadius)))
         }
@@ -372,8 +377,8 @@ enum AnnotationRenderer {
         let bounds = CGRect(x: 0, y: 0, width: width, height: height)
         let colorSpace =
             source.colorSpace
-            ?? CGColorSpace(name: CGColorSpace.sRGB)
-            ?? CGColorSpaceCreateDeviceRGB()
+                ?? CGColorSpace(name: CGColorSpace.sRGB)
+                ?? CGColorSpaceCreateDeviceRGB()
         guard let context = makeContext(width: width, height: height, colorSpace: colorSpace) else {
             throw AnnotationRenderingError.contextCreationFailed
         }
@@ -444,12 +449,12 @@ enum AnnotationRenderer {
         for region in regions {
             let blurred =
                 input
-                .clampedToExtent()
-                .applyingFilter(
-                    "CIGaussianBlur",
-                    parameters: [kCIInputRadiusKey: max(1, region.radius)]
-                )
-                .cropped(to: input.extent)
+                    .clampedToExtent()
+                    .applyingFilter(
+                        "CIGaussianBlur",
+                        parameters: [kCIInputRadiusKey: max(1, region.radius)]
+                    )
+                    .cropped(to: input.extent)
             guard let blurredImage = ciContext.createCGImage(blurred, from: input.extent) else {
                 continue
             }

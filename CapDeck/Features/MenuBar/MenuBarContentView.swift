@@ -175,7 +175,6 @@ struct MenuBarContentView: View {
             ? globalShortcuts.shortcut(for: action).displayValue
             : status.label
     }
-
 }
 
 #Preview {

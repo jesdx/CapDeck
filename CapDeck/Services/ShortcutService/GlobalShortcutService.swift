@@ -24,7 +24,7 @@ final class GlobalShortcutService: ObservableObject {
     private let defaults: UserDefaults
     private var hasStarted = false
     private var registrationPaused = false
-    nonisolated(unsafe) private var launchObserver: NSObjectProtocol?
+    private nonisolated(unsafe) var launchObserver: NSObjectProtocol?
 
     init(
         registrar: GlobalShortcutRegistering? = nil,
@@ -112,8 +112,8 @@ final class GlobalShortcutService: ObservableObject {
             guard status == .registered else {
                 errors[action] =
                     status == .conflict
-                    ? "That shortcut is already in use."
-                    : "macOS could not register that shortcut."
+                        ? "That shortcut is already in use."
+                        : "macOS could not register that shortcut."
                 return false
             }
 
@@ -130,8 +130,8 @@ final class GlobalShortcutService: ObservableObject {
             statuses[action] = restoredStatus
             errors[action] =
                 status == .conflict
-                ? "That shortcut is already in use."
-                : "macOS could not register that shortcut."
+                    ? "That shortcut is already in use."
+                    : "macOS could not register that shortcut."
             return false
         }
 
@@ -225,11 +225,11 @@ final class GlobalShortcutService: ObservableObject {
 
 @MainActor
 private final class CarbonGlobalShortcutRegistrar: GlobalShortcutRegistering {
-    private static let signature: OSType = 0x4C58484B  // LXHK
+    private static let signature: OSType = 0x4C58_484B // LXHK
 
-    nonisolated(unsafe) private var eventHandler: EventHandlerRef?
-    nonisolated(unsafe) private var hotKeys: [GlobalShortcutAction: EventHotKeyRef] = [:]
-    nonisolated(unsafe) private var installationStatus = OSStatus(eventNotHandledErr)
+    private nonisolated(unsafe) var eventHandler: EventHandlerRef?
+    private nonisolated(unsafe) var hotKeys: [GlobalShortcutAction: EventHotKeyRef] = [:]
+    private nonisolated(unsafe) var installationStatus = OSStatus(eventNotHandledErr)
     private var handlers: [GlobalShortcutAction: @MainActor (GlobalShortcutAction) -> Void] = [:]
 
     init() {
@@ -255,7 +255,7 @@ private final class CarbonGlobalShortcutRegistrar: GlobalShortcutRegistering {
                     &hotKeyID
                 )
                 guard result == noErr,
-                    hotKeyID.signature == CarbonGlobalShortcutRegistrar.signature
+                      hotKeyID.signature == CarbonGlobalShortcutRegistrar.signature
                 else {
                     return result
                 }

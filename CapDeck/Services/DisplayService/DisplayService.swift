@@ -10,7 +10,9 @@ struct CaptureDisplay: Identifiable {
     let nativeScale: CGFloat
     let screen: NSScreen
 
-    var logicalSize: CGSize { appKitFrame.size }
+    var logicalSize: CGSize {
+        appKitFrame.size
+    }
 
     var nativePixelSize: CGSize {
         CGSize(

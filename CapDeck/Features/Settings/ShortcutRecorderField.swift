@@ -36,7 +36,7 @@ struct ShortcutRecorderField: View {
 @MainActor
 private final class ShortcutRecorderController: ObservableObject {
     @Published private(set) var isRecording = false
-    nonisolated(unsafe) private var monitor: Any?
+    private nonisolated(unsafe) var monitor: Any?
     private var onRecord: ((GlobalShortcut) -> Void)?
     private var onEnd: (() -> Void)?
 
@@ -106,10 +106,18 @@ private final class ShortcutRecorderController: ObservableObject {
         guard !flags.isEmpty, let keyLabel = keyLabel(for: event) else { return nil }
 
         var modifiers: UInt32 = 0
-        if flags.contains(.control) { modifiers |= UInt32(controlKey) }
-        if flags.contains(.option) { modifiers |= UInt32(optionKey) }
-        if flags.contains(.shift) { modifiers |= UInt32(shiftKey) }
-        if flags.contains(.command) { modifiers |= UInt32(cmdKey) }
+        if flags.contains(.control) {
+            modifiers |= UInt32(controlKey)
+        }
+        if flags.contains(.option) {
+            modifiers |= UInt32(optionKey)
+        }
+        if flags.contains(.shift) {
+            modifiers |= UInt32(shiftKey)
+        }
+        if flags.contains(.command) {
+            modifiers |= UInt32(cmdKey)
+        }
 
         return GlobalShortcut(
             keyCode: UInt32(event.keyCode),
@@ -139,7 +147,7 @@ private final class ShortcutRecorderController: ObservableObject {
         case kVK_PageDown: return "Page Down"
         default:
             guard let value = event.charactersIgnoringModifiers?.uppercased(),
-                !value.isEmpty
+                  !value.isEmpty
             else {
                 return nil
             }

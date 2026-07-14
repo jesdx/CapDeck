@@ -6,7 +6,7 @@ final class CapDeckUITests: XCTestCase {
     }
 
     @MainActor
-    func testSettingsNavigationAndSafetyControls() throws {
+    func testSettingsNavigationAndSafetyControls() {
         let app = launchApplication()
         let statusItem = app.menuBars.statusItems["CapDeck"]
         XCTAssertTrue(statusItem.waitForExistence(timeout: 5))
@@ -34,7 +34,7 @@ final class CapDeckUITests: XCTestCase {
     }
 
     @MainActor
-    func testMenuBarProvidesCriticalCommands() throws {
+    func testMenuBarProvidesCriticalCommands() {
         let app = launchApplication()
         let statusItem = app.menuBars.statusItems["CapDeck"]
         XCTAssertTrue(statusItem.waitForExistence(timeout: 5))
@@ -49,7 +49,7 @@ final class CapDeckUITests: XCTestCase {
     }
 
     @MainActor
-    func testLaunchPerformance() throws {
+    func testLaunchPerformance() {
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             let app = XCUIApplication()
             app.launchEnvironment["CAPDECK_UI_TESTING"] = "1"
