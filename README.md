@@ -10,6 +10,20 @@ Capture -> Clipboard -> Paste -> Done
 It is built for screenshots that are often temporary and immediately pasted
 into ChatGPT, Codex, Claude, Gemini, Messenger, Slack, Discord, or documentation.
 
+## Install
+
+Install with [Homebrew](https://brew.sh):
+
+```sh
+brew install --cask jesdx/tap/capdeck
+```
+
+CapDeck is not yet notarized by Apple, so Gatekeeper blocks it on first launch.
+Remove the quarantine flag once with
+`xattr -dr com.apple.quarantine "/Applications/CapDeck.app"`, or right-click
+CapDeck in Applications and choose **Open**. You can also download the latest
+`.zip` directly from [Releases](https://github.com/jesdx/CapDeck-Releases/releases).
+
 ## Status
 
 CapDeck V1.2.2 has a complete personal native capture, clipboard, preview,
