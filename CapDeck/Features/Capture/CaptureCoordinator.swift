@@ -273,7 +273,7 @@ final class CaptureCoordinator: ObservableObject {
                 state = .failed(message: error.localizedDescription)
             }
             Self.logger.error(
-                "Capture failed mode=\(String(describing: mode), privacy: .public) error=\(error.localizedDescription, privacy: .public)"
+                "Capture failed mode=\(String(describing: mode), privacy: .public) error=\(error.localizedDescription, privacy: .private)"
             )
         }
     }
