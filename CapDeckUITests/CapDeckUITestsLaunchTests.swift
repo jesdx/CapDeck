@@ -1,14 +1,6 @@
-//
-//  CapDeckUITestsLaunchTests.swift
-//  CapDeckUITests
-//
-//  Created by Jesdaporn Saengseengam on 14/7/2569 BE.
-//
-
 import XCTest
 
 final class CapDeckUITestsLaunchTests: XCTestCase {
-
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true
     }
@@ -18,7 +10,7 @@ final class CapDeckUITestsLaunchTests: XCTestCase {
     }
 
     @MainActor
-    func testLaunch() throws {
+    func testLaunch() {
         let app = XCUIApplication()
         app.launch()
 

@@ -20,7 +20,10 @@ enum PreviewPolicy: String, CaseIterable, Sendable {
 @MainActor
 final class AppSettings: ObservableObject {
     static let currentSchemaVersion = 1
-    static let menuBarVisibilityDefaultsKey = "settings.menuBarIconVisible"
+    // nonisolated so the nonisolated `Key` enum below (and non-main-actor
+    // callers) can reference this constant; older Swift 6.0 toolchains reject a
+    // main-actor-isolated default value in that nonisolated context.
+    nonisolated static let menuBarVisibilityDefaultsKey = "settings.menuBarIconVisible"
 
     private enum Key {
         static let schemaVersion = "settings.schemaVersion"

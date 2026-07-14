@@ -1,10 +1,3 @@
-//
-//  MenuBarContentView.swift
-//  CapDeck
-//
-//  Created by Jesdaporn Saengseengam on 14/7/2569 BE.
-//
-
 import AppKit
 import SwiftUI
 
