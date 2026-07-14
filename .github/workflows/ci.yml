@@ -53,15 +53,24 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install pinned linters
+        # Install into a dedicated dir and prepend it to PATH so the pinned
+        # versions win over any newer SwiftFormat/SwiftLint pre-installed on the
+        # runner (whose extra rules would otherwise diverge from local runs).
         run: |
+          mkdir -p "$HOME/linters"
           curl -fsSL "https://github.com/nicklockwood/SwiftFormat/releases/download/${SWIFTFORMAT_VERSION}/swiftformat.zip" -o swiftformat.zip
           unzip -oq swiftformat.zip -d swiftformat-bin
-          sudo install "$(find swiftformat-bin -type f -name swiftformat | head -1)" /usr/local/bin/swiftformat
+          install "$(find swiftformat-bin -type f -name swiftformat | head -1)" "$HOME/linters/swiftformat"
           curl -fsSL "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip" -o swiftlint.zip
           unzip -oq swiftlint.zip -d swiftlint-bin
-          sudo install "$(find swiftlint-bin -type f -name swiftlint | head -1)" /usr/local/bin/swiftlint
+          install "$(find swiftlint-bin -type f -name swiftlint | head -1)" "$HOME/linters/swiftlint"
+          echo "$HOME/linters" >> "$GITHUB_PATH"
+
+      - name: Show linter versions
+        run: |
+          which swiftformat swiftlint
           swiftformat --version
-          swiftlint --version
+          swiftlint version
 
       - name: SwiftFormat (lint mode)
         run: swiftformat --lint .
