@@ -27,6 +27,7 @@ enum GlobalShortcutAction: UInt32, CaseIterable, Hashable, Identifiable, Sendabl
     case captureRegion = 1
     case captureWindow = 2
     case captureFullScreen = 3
+    case captureText = 4
 
     var id: UInt32 {
         rawValue
@@ -37,6 +38,7 @@ enum GlobalShortcutAction: UInt32, CaseIterable, Hashable, Identifiable, Sendabl
         case .captureRegion: "Capture Region"
         case .captureWindow: "Capture Window"
         case .captureFullScreen: "Capture Full Screen"
+        case .captureText: "Capture Text"
         }
     }
 
@@ -45,6 +47,7 @@ enum GlobalShortcutAction: UInt32, CaseIterable, Hashable, Identifiable, Sendabl
         case .captureRegion: "region"
         case .captureWindow: "window"
         case .captureFullScreen: "fullScreen"
+        case .captureText: "text"
         }
     }
 
@@ -57,6 +60,8 @@ enum GlobalShortcutAction: UInt32, CaseIterable, Hashable, Identifiable, Sendabl
             GlobalShortcut(keyCode: UInt32(kVK_ANSI_K), modifiers: modifiers, keyLabel: "K")
         case .captureFullScreen:
             GlobalShortcut(keyCode: UInt32(kVK_ANSI_L), modifiers: modifiers, keyLabel: "L")
+        case .captureText:
+            GlobalShortcut(keyCode: UInt32(kVK_ANSI_T), modifiers: modifiers, keyLabel: "T")
         }
     }
 }

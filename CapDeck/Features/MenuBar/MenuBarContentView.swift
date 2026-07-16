@@ -82,6 +82,19 @@ struct MenuBarContentView: View {
             }
             .disabled(coordinator.state.isBusy)
 
+            Button {
+                Task {
+                    await coordinator.captureText()
+                }
+            } label: {
+                shortcutLabel(
+                    "Capture Text",
+                    systemImage: "text.viewfinder",
+                    action: .captureText
+                )
+            }
+            .disabled(coordinator.state.isBusy)
+
             Divider()
 
             Toggle(isOn: $settings.isAutoCopyEnabled) {

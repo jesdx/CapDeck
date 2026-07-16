@@ -108,8 +108,8 @@ have actually been reviewed.
   - [x] Slice 2: "Copy Text" in History and the Annotation editor; the editor
     recognizes the rendered/cropped image, so a crop restricts OCR to that
     region and blur keeps redacted text out.
-  - [ ] Slice 3: dedicated "Capture Text" shortcut — region → OCR →
-    clipboard with no preview.
+  - [x] Slice 3: dedicated "Capture Text" global shortcut (default ⌃⇧T) —
+    region → OCR → clipboard with no image, save, preview, or history.
 - [ ] QR code detection
 - [ ] Floating image window
 - [ ] Pin image behavior

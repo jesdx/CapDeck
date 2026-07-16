@@ -9,8 +9,11 @@ enum CaptureWorkflowState: Equatable {
     case delaying(seconds: Int)
     case selecting(CaptureMode)
     case capturing
+    case recognizingText
     case cancelled
     case completed(width: Int, height: Int, copied: Bool)
+    case textCopied
+    case noTextFound
     case permissionDenied
     case failed(message: String)
 
@@ -30,12 +33,18 @@ enum CaptureWorkflowState: Equatable {
             "Preparing capture…"
         case .capturing:
             "Capturing screen…"
+        case .recognizingText:
+            "Recognizing text…"
         case .cancelled:
             "Capture cancelled"
         case let .completed(width, height, copied):
             copied
                 ? "Copied \(width) × \(height) to clipboard"
                 : "Captured \(width) × \(height)"
+        case .textCopied:
+            "Text copied to clipboard"
+        case .noTextFound:
+            "No text found in selection"
         case .permissionDenied:
             "Screen Recording permission is required"
         case let .failed(message):
@@ -47,12 +56,14 @@ enum CaptureWorkflowState: Equatable {
         switch self {
         case .idle:
             "circle.fill"
-        case .requestingPermission, .delaying, .selecting, .capturing:
+        case .requestingPermission, .delaying, .selecting, .capturing, .recognizingText:
             "ellipsis.circle"
         case .cancelled:
             "xmark.circle"
-        case .completed:
+        case .completed, .textCopied:
             "checkmark.circle.fill"
+        case .noTextFound:
+            "text.magnifyingglass"
         case .permissionDenied:
             "lock.trianglebadge.exclamationmark"
         case .failed:
@@ -62,7 +73,7 @@ enum CaptureWorkflowState: Equatable {
 
     var isBusy: Bool {
         switch self {
-        case .requestingPermission, .delaying, .selecting, .capturing:
+        case .requestingPermission, .delaying, .selecting, .capturing, .recognizingText:
             true
         default:
             false
@@ -88,6 +99,7 @@ final class CaptureCoordinator: ObservableObject {
     private let previewPresenter: CapturePreviewPresenting
     private let historyRecorder: CaptureHistoryRecording
     private let historyPresenter: CaptureHistoryPresenting
+    private let textCopier: CaptureTextCopier
     private let settings: AppSettings
 
     init(
@@ -99,6 +111,7 @@ final class CaptureCoordinator: ObservableObject {
         previewPresenter: CapturePreviewPresenting,
         historyRecorder: CaptureHistoryRecording,
         historyPresenter: CaptureHistoryPresenting,
+        textCopier: CaptureTextCopier,
         settings: AppSettings
     ) {
         self.permissionService = permissionService
@@ -109,6 +122,7 @@ final class CaptureCoordinator: ObservableObject {
         self.previewPresenter = previewPresenter
         self.historyRecorder = historyRecorder
         self.historyPresenter = historyPresenter
+        self.textCopier = textCopier
         self.settings = settings
     }
 
@@ -135,35 +149,60 @@ final class CaptureCoordinator: ObservableObject {
         await capture(mode: .fullScreen, displayID: displayID)
     }
 
+    /// Region select → capture → OCR → clipboard, with none of the image-capture
+    /// side effects: no image on the clipboard, no save, no preview, and no
+    /// history entry. The user wanted the text, not the screenshot.
+    func captureText() async {
+        guard canStartCapture() else { return }
+        Self.logger.info("Capture Text started")
+        previewPresenter.dismiss()
+        historyPresenter.dismiss()
+
+        guard await ensureAuthorizedOrDeny() else { return }
+
+        do {
+            state = .selecting(.region)
+            guard let request = try await selectionPresenter.selectRegion() else {
+                state = .cancelled
+                return
+            }
+
+            // Give WindowServer one frame to remove the selection overlays.
+            try await Task.sleep(for: .milliseconds(100))
+
+            state = .capturing
+            let result = try await captureService.capture(request)
+
+            state = .recognizingText
+            switch await textCopier.copyText(from: result) {
+            case .copied:
+                state = .textCopied
+            case .noTextFound:
+                state = .noTextFound
+            case .cancelled:
+                state = .cancelled
+            case .failed:
+                state = .failed(
+                    message: TextRecognitionServiceError.recognitionFailed.localizedDescription
+                )
+            }
+        } catch {
+            handleCaptureFailure(error, label: "Capture Text")
+        }
+    }
+
     private func capture(
         mode: CaptureMode,
         displayID: CGDirectDisplayID? = nil,
         requestOverride: CaptureRequest? = nil
     ) async {
-        guard !state.isBusy else { return }
-        // A capture dismisses any open post-capture UI. If the user has a modal
-        // save dialog attached to the preview, annotation editor, or history
-        // window, tearing it down here would silently cancel their in-progress
-        // save, so ignore the request instead (as with an in-flight capture).
-        guard !previewPresenter.isPresentingModalSheet,
-              !historyPresenter.isPresentingModalSheet
-        else {
-            Self.logger.notice("Capture request ignored while a save dialog is open")
-            return
-        }
+        guard canStartCapture() else { return }
         let startedAt = ContinuousClock.now
         Self.logger.info("Capture started mode=\(String(describing: mode), privacy: .public)")
         previewPresenter.dismiss()
         historyPresenter.dismiss()
 
-        let permissionResult = await ensurePermission()
-        guard permissionResult == .authorized else {
-            state = .permissionDenied
-            if permissionResult == .previouslyRequested {
-                permissionService.presentRecoveryPrompt()
-            }
-            return
-        }
+        guard await ensureAuthorizedOrDeny() else { return }
 
         do {
             var usedVisualSelection = false
@@ -263,18 +302,7 @@ final class CaptureCoordinator: ObservableObject {
                 state = .failed(message: clipboardError.localizedDescription)
             }
         } catch {
-            // Permission can be revoked after the preflight check but before
-            // ScreenCaptureKit finishes producing the image. Re-check here so
-            // the user receives the same recovery path as an initial denial.
-            if !permissionService.isAuthorized {
-                state = .permissionDenied
-                permissionService.presentRecoveryPrompt()
-            } else {
-                state = .failed(message: error.localizedDescription)
-            }
-            Self.logger.error(
-                "Capture failed mode=\(String(describing: mode), privacy: .public) error=\(error.localizedDescription, privacy: .private)"
-            )
+            handleCaptureFailure(error, label: "Capture mode=\(String(describing: mode))")
         }
     }
 
@@ -284,6 +312,52 @@ final class CaptureCoordinator: ObservableObject {
 
     func resetStatus() {
         state = .idle
+    }
+
+    /// Rejects re-entry while a capture is in flight and refuses to proceed
+    /// while a modal save sheet is attached to the preview, annotation editor,
+    /// or history window — tearing that down would silently cancel the user's
+    /// in-progress save. Returns false when the request should be ignored.
+    private func canStartCapture() -> Bool {
+        guard !state.isBusy else { return false }
+        guard !previewPresenter.isPresentingModalSheet,
+              !historyPresenter.isPresentingModalSheet
+        else {
+            Self.logger.notice("Capture request ignored while a save dialog is open")
+            return false
+        }
+        return true
+    }
+
+    /// Runs the permission preflight, moving to `.permissionDenied` and showing
+    /// the recovery prompt when access is unavailable. Returns true when capture
+    /// may proceed.
+    private func ensureAuthorizedOrDeny() async -> Bool {
+        let result = await ensurePermission()
+        guard result == .authorized else {
+            state = .permissionDenied
+            if result == .previouslyRequested {
+                permissionService.presentRecoveryPrompt()
+            }
+            return false
+        }
+        return true
+    }
+
+    /// Maps a thrown capture error to its terminal state. Permission can be
+    /// revoked after the preflight check but before ScreenCaptureKit finishes
+    /// producing the image, so a revocation gets the same recovery path as an
+    /// initial denial; everything else is a failure.
+    private func handleCaptureFailure(_ error: Error, label: String) {
+        if !permissionService.isAuthorized {
+            state = .permissionDenied
+            permissionService.presentRecoveryPrompt()
+        } else {
+            state = .failed(message: error.localizedDescription)
+        }
+        Self.logger.error(
+            "\(label, privacy: .public) failed error=\(error.localizedDescription, privacy: .private)"
+        )
     }
 
     private func ensurePermission() async -> ScreenCapturePermissionRequestResult {

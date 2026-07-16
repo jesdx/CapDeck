@@ -290,12 +290,86 @@ struct CaptureCoordinatorTests {
         #expect(fixture.coordinator.availableWindows.first?.displayName == "Example — Document")
     }
 
+    @Test
+    func captureTextCopiesRecognizedTextAndSkipsImageSideEffects() async throws {
+        let fixture = try makeFixture(
+            autoCopy: true,
+            permissionGranted: true,
+            previewPolicy: .always,
+            savePolicy: .always,
+            recognizedText: RecognizedText(lines: [
+                RecognizedTextLine(
+                    text: "Hello",
+                    boundingBox: CGRect(x: 0, y: 0, width: 10, height: 10),
+                    confidence: 1
+                ),
+            ])
+        )
+        fixture.selectionService.regionRequest = CaptureRequest(
+            mode: .region,
+            displayID: 7,
+            sourceRect: CGRect(x: 0, y: 0, width: 40, height: 20)
+        )
+
+        await fixture.coordinator.captureText()
+
+        #expect(fixture.selectionService.regionSelectionCount == 1)
+        #expect(fixture.captureService.requests.count == 1)
+        #expect(fixture.clipboardService.writtenText == ["Hello"])
+        // No image side effects: no image on the clipboard, no save, no preview,
+        // no history entry.
+        #expect(fixture.clipboardService.writeCount == 0)
+        #expect(fixture.saveService.processedPolicies.isEmpty)
+        #expect(fixture.previewService.presentations.isEmpty)
+        #expect(fixture.historyRecorder.records.isEmpty)
+        #expect(fixture.coordinator.state == .textCopied)
+    }
+
+    @Test
+    func captureTextReportsNoTextFoundWithoutWritingClipboard() async throws {
+        let fixture = try makeFixture(
+            autoCopy: true,
+            permissionGranted: true,
+            recognizedText: .empty
+        )
+
+        await fixture.coordinator.captureText()
+
+        #expect(fixture.captureService.requests.count == 1)
+        #expect(fixture.clipboardService.writtenText.isEmpty)
+        #expect(fixture.coordinator.state == .noTextFound)
+    }
+
+    @Test
+    func captureTextCancelledSelectionHasNoSideEffects() async throws {
+        let fixture = try makeFixture(autoCopy: true, permissionGranted: true)
+        fixture.selectionService.regionRequest = nil
+
+        await fixture.coordinator.captureText()
+
+        #expect(fixture.captureService.requests.isEmpty)
+        #expect(fixture.clipboardService.writtenText.isEmpty)
+        #expect(fixture.coordinator.state == .cancelled)
+    }
+
+    @Test
+    func captureTextStopsWhenPermissionDenied() async throws {
+        let fixture = try makeFixture(autoCopy: true, permissionGranted: false)
+
+        await fixture.coordinator.captureText()
+
+        #expect(fixture.captureService.requests.isEmpty)
+        #expect(fixture.clipboardService.writtenText.isEmpty)
+        #expect(fixture.coordinator.state == .permissionDenied)
+    }
+
     private func makeFixture(
         autoCopy: Bool,
         permissionGranted: Bool,
         previewPolicy: PreviewPolicy = .autoHide,
         savePolicy: SavePolicy = .never,
-        saveOutcome: CaptureSaveOutcome = .skipped
+        saveOutcome: CaptureSaveOutcome = .skipped,
+        recognizedText: RecognizedText = .empty
     ) throws -> Fixture {
         let suiteName = "CaptureCoordinatorTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
@@ -311,6 +385,11 @@ struct CaptureCoordinatorTests {
         let previewService = PreviewServiceFake()
         let historyRecorder = HistoryRecorderFake()
         let historyPresenter = HistoryPresenterFake()
+        let textRecognizer = TextRecognizerFake(result: recognizedText)
+        let textCopier = CaptureTextCopier(
+            recognizer: textRecognizer,
+            clipboardService: clipboardService
+        )
         let settings = AppSettings(defaults: defaults)
         let coordinator = CaptureCoordinator(
             permissionService: permissionService,
@@ -321,6 +400,7 @@ struct CaptureCoordinatorTests {
             previewPresenter: previewService,
             historyRecorder: historyRecorder,
             historyPresenter: historyPresenter,
+            textCopier: textCopier,
             settings: settings
         )
 
@@ -469,6 +549,18 @@ private final class CaptureServiceFake: ScreenCapturing {
     func capture(_ request: CaptureRequest) async throws -> CaptureResult {
         requests.append(request)
         onCapture?()
+        if let error {
+            throw error
+        }
+        return result
+    }
+}
+
+private struct TextRecognizerFake: TextRecognizing {
+    var result: RecognizedText = .empty
+    var error: Error?
+
+    func recognizeText(in _: CaptureResult) async throws -> RecognizedText {
         if let error {
             throw error
         }
