@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/jesdx/CapDeck/security/advisories/new
+    about: Please report security issues privately, not as a public issue.
+  - name: Security contact (email)
+    url: mailto:capdeck@jesdx.com
+    about: You can also email security reports privately.
