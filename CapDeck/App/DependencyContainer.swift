@@ -19,6 +19,7 @@ final class DependencyContainer: ObservableObject {
         selectionPresenter: CaptureSelectionPresenting? = nil,
         captureService: ScreenCapturing? = nil,
         clipboardService: ClipboardWriting? = nil,
+        textRecognizer: TextRecognizing? = nil,
         softwareUpdate: SoftwareUpdateService? = nil
     ) {
         let resolvedSettings = settings ?? AppSettings()
@@ -29,6 +30,11 @@ final class DependencyContainer: ObservableObject {
                 ?? CaptureSelectionPresenter(displayService: resolvedDisplayService)
         let resolvedCaptureService = captureService ?? ScreenCaptureService()
         let resolvedClipboardService = clipboardService ?? PasteboardClipboardService()
+        let resolvedTextRecognizer = textRecognizer ?? VisionTextRecognitionService()
+        let resolvedTextCopier = CaptureTextCopier(
+            recognizer: resolvedTextRecognizer,
+            clipboardService: resolvedClipboardService
+        )
         let resolvedSaveService = CaptureFileService()
         let resolvedAnnotationPresenter = AnnotationEditorPresenter(
             clipboardService: resolvedClipboardService,
@@ -40,6 +46,7 @@ final class DependencyContainer: ObservableObject {
             clipboardService: resolvedClipboardService,
             displayService: resolvedDisplayService,
             saveService: resolvedSaveService,
+            textCopier: resolvedTextCopier,
             configurationProvider: { resolvedSettings.saveConfiguration }
         )
         let resolvedHistoryStore = CaptureHistoryStore()

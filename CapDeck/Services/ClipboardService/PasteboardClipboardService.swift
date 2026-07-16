@@ -11,6 +11,7 @@ enum ClipboardServiceError: LocalizedError {
 @MainActor
 protocol ClipboardWriting {
     func write(_ result: CaptureResult) throws
+    func writeText(_ text: String) throws
 }
 
 @MainActor
@@ -36,6 +37,14 @@ final class PasteboardClipboardService: ClipboardWriting {
             pasteboard.setData(pngData, forType: .png),
             pasteboard.setData(tiffData, forType: .tiff)
         else {
+            throw ClipboardServiceError.writeFailed
+        }
+    }
+
+    func writeText(_ text: String) throws {
+        pasteboard.clearContents()
+        pasteboard.declareTypes([.string], owner: nil)
+        guard pasteboard.setString(text, forType: .string) else {
             throw ClipboardServiceError.writeFailed
         }
     }

@@ -59,6 +59,7 @@ final class CapturePreviewPresenter: NSObject, CapturePreviewPresenting, NSWindo
     private let clipboardService: ClipboardWriting
     private let displayService: DisplayProviding
     private let saveService: CaptureSaving
+    private let textCopier: CaptureTextCopier
     private let configurationProvider: () -> CaptureSaveConfiguration
     private var thumbnailPanel: NSPanel?
     private var previewPanel: NSPanel?
@@ -69,12 +70,14 @@ final class CapturePreviewPresenter: NSObject, CapturePreviewPresenting, NSWindo
         clipboardService: ClipboardWriting,
         displayService: DisplayProviding,
         saveService: CaptureSaving,
+        textCopier: CaptureTextCopier,
         configurationProvider: @escaping () -> CaptureSaveConfiguration
     ) {
         self.annotationPresenter = annotationPresenter
         self.clipboardService = clipboardService
         self.displayService = displayService
         self.saveService = saveService
+        self.textCopier = textCopier
         self.configurationProvider = configurationProvider
     }
 
@@ -191,6 +194,10 @@ final class CapturePreviewPresenter: NSObject, CapturePreviewPresenting, NSWindo
                 } catch {
                     return false
                 }
+            },
+            onCopyText: { [weak self] in
+                guard let self else { return .failed }
+                return await textCopier.copyText(from: result)
             },
             onSave: { [weak self] in
                 guard let self else { return .failed("Preview is no longer available.") }
@@ -358,6 +365,7 @@ private struct CapturePreviewView: View {
     let displayScale: CGFloat
     let onAnnotate: () -> Void
     let onCopy: () -> Bool
+    let onCopyText: () async -> CopyTextOutcome
     let onSave: () async -> CaptureSaveOutcome
     let onClose: () -> Void
 
@@ -365,6 +373,7 @@ private struct CapturePreviewView: View {
     @State private var copyStatus: String?
     @State private var saveStatus: String?
     @State private var isSaving = false
+    @State private var isRecognizingText = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -400,7 +409,11 @@ private struct CapturePreviewView: View {
                 if let copyStatus {
                     Text(copyStatus)
                         .font(.caption)
-                        .foregroundStyle(copyStatus == "Copied" ? .green : .orange)
+                        .foregroundStyle(
+                            copyStatus == "Copied" || copyStatus == "Text copied"
+                                ? .green
+                                : .orange
+                        )
                 }
                 if let saveStatus {
                     Text(saveStatus)
@@ -446,6 +459,35 @@ private struct CapturePreviewView: View {
                 .keyboardShortcut("s", modifiers: .command)
                 .accessibilityLabel("Save capture")
                 .accessibilityIdentifier("preview.save")
+
+                Button {
+                    Task {
+                        isRecognizingText = true
+                        let outcome = await onCopyText()
+                        isRecognizingText = false
+                        switch outcome {
+                        case .copied:
+                            copyStatus = "Text copied"
+                        case .noTextFound:
+                            copyStatus = "No text found"
+                        case .cancelled:
+                            copyStatus = nil
+                        case .failed:
+                            copyStatus = "Copy failed"
+                        }
+                    }
+                } label: {
+                    if isRecognizingText {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Label("Copy Text", systemImage: "text.viewfinder")
+                    }
+                }
+                .disabled(isRecognizingText)
+                .keyboardShortcut("t", modifiers: .command)
+                .accessibilityLabel("Copy recognized text")
+                .accessibilityIdentifier("preview.copyText")
 
                 Button {
                     let succeeded = onCopy()
