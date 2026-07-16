@@ -205,6 +205,11 @@ capture.
 - In the Annotation editor, recognition reads the rendered image, so a crop
   restricts the recognized text to the cropped region and a blur keeps the text
   it covers out of the result.
+- A global **Capture Text** shortcut (default ⌃⇧T) runs the whole flow in one
+  step: select a region, recognize its text, and place it on the clipboard —
+  with no image on the clipboard, no saved file, no preview, and no history
+  entry. The menu bar shows "Recognizing text…", then "Text copied to
+  clipboard" or "No text found in selection".
 - Success copies the recognized text and shows "Text copied"; the Preview window
   stays open so the user can also copy or annotate the image.
 - A capture with no readable text shows "No text found" and leaves the clipboard

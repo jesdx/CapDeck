@@ -77,6 +77,7 @@ final class DependencyContainer: ObservableObject {
             previewPresenter: resolvedPreviewPresenter,
             historyRecorder: resolvedHistoryStore,
             historyPresenter: resolvedHistoryPresenter,
+            textCopier: resolvedTextCopier,
             settings: resolvedSettings
         )
         captureCoordinator = coordinator
@@ -92,6 +93,8 @@ final class DependencyContainer: ObservableObject {
                     await coordinator.captureFullScreen(
                         displayID: resolvedDisplayService.displayUnderPointer()?.id
                     )
+                case .captureText:
+                    await coordinator.captureText()
                 }
             }
         }
