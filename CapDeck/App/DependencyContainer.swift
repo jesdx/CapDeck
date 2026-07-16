@@ -39,6 +39,7 @@ final class DependencyContainer: ObservableObject {
         let resolvedAnnotationPresenter = AnnotationEditorPresenter(
             clipboardService: resolvedClipboardService,
             saveService: resolvedSaveService,
+            textCopier: resolvedTextCopier,
             configurationProvider: { resolvedSettings.saveConfiguration }
         )
         let resolvedPreviewPresenter = CapturePreviewPresenter(
@@ -55,6 +56,7 @@ final class DependencyContainer: ObservableObject {
             clipboardService: resolvedClipboardService,
             previewPresenter: resolvedPreviewPresenter,
             saveService: resolvedSaveService,
+            textCopier: resolvedTextCopier,
             configurationProvider: { resolvedSettings.saveConfiguration }
         )
 
