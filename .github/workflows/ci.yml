@@ -21,7 +21,7 @@ jobs:
     name: Build & Test
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Select Xcode 26
         run: |
@@ -50,7 +50,7 @@ jobs:
     name: SwiftLint & SwiftFormat
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install pinned linters
         # Install into a dedicated dir and prepend it to PATH so the pinned
