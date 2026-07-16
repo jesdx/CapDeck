@@ -38,8 +38,7 @@ Recording permission prompt.
 
 ## Style
 
-- SwiftFormat (`.swiftformat`) — 4-space indent, `before-first` argument
-  wrapping, trailing commas.
+- SwiftFormat — run `swiftformat .` before opening a PR.
 - SwiftLint (`.swiftlint.yml`) — note that `force_unwrapping` is enabled;
   force unwraps and `try!` are **not** allowed in production code.
 
@@ -69,8 +68,9 @@ the highest-risk area and **must** keep its unit tests green for any change.
 2. Add a regression test with every testable bug fix. Name tests by behavior
    (e.g. `askEveryTimeKeepsClipboardResultWhenSaveIsDeclined`).
 3. Make sure `xcodebuild … test`, SwiftFormat, and SwiftLint all pass.
-4. Keep changes focused; update the relevant docs (`PRODUCT_REQUIREMENTS.md`,
-   `TASKS.md`, `CHANGELOG.md`) when behavior changes.
+4. Keep changes focused; update the relevant docs
+   ([`PRODUCT_REQUIREMENTS.md`](docs/PRODUCT_REQUIREMENTS.md),
+   [`TASKS.md`](docs/TASKS.md), `CHANGELOG.md`) when behavior changes.
 5. Open the PR with a clear description of the behavior change and why.
 
 ## Reporting bugs

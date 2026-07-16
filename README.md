@@ -77,6 +77,7 @@ below.
 - [Tasks and roadmap](docs/TASKS.md)
 - [Implementation status](docs/STATUS.md)
 - [Capture and preview acceptance](docs/ACCEPTANCE.md)
+- [Privacy policy](docs/PRIVACY.md)
 
 ## Build
 
