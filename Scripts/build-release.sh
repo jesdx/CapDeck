@@ -34,6 +34,7 @@ rm -rf "$app_destination" "$archive_path" "$checksum_path"
 ditto "$app_source" "$app_destination"
 
 signing_identity="${CAPDECK_SIGNING_IDENTITY:--}"
+is_adhoc_build=0
 timestamp_arguments=()
 temporary_entitlements=$(mktemp -t CapDeck-entitlements).plist
 trap 'rm -f "$temporary_entitlements"' EXIT
@@ -49,6 +50,11 @@ bundle_identifier=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" \
 app_entitlements="$temporary_entitlements"
 
 if [[ "$signing_identity" == "-" ]]; then
+  # Ad-hoc builds cannot satisfy library validation for Sparkle's nested
+  # helpers, so it is disabled here. That weakens code-injection protection and
+  # must never reach users: an ad-hoc archive is refused below unless explicitly
+  # opted into for local testing.
+  is_adhoc_build=1
   /usr/libexec/PlistBuddy -c \
     "Add :com.apple.security.cs.disable-library-validation bool true" \
     "$temporary_entitlements"
@@ -91,6 +97,21 @@ for key in \
     exit 1
   fi
 done
+
+if [[ "$is_adhoc_build" -eq 1 && "${CAPDECK_ALLOW_ADHOC_ARCHIVE:-0}" != "1" ]]; then
+  print "Built ad-hoc app for local testing: $app_destination"
+  print -u2 "Refusing to package a distributable archive from an ad-hoc build."
+  print -u2 "This build disables library validation and must not be shipped."
+  print -u2 "Set CAPDECK_SIGNING_IDENTITY to a Developer ID identity for a"
+  print -u2 "release, or set CAPDECK_ALLOW_ADHOC_ARCHIVE=1 to archive it anyway"
+  print -u2 "for local testing only."
+  exit 1
+fi
+
+if [[ "$is_adhoc_build" -eq 1 ]]; then
+  print -u2 "WARNING: archiving an ad-hoc build (library validation disabled)."
+  print -u2 "For local testing only. Do not distribute this archive."
+fi
 
 ditto -c -k --sequesterRsrc --keepParent "$app_destination" "$archive_path"
 (

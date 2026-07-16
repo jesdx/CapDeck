@@ -118,8 +118,48 @@ RSS is approximately 77–79 MiB.
 
 ## Owner Review Handoff
 
-- Paste into ChatGPT, Codex, Claude, Messenger, Slack, and Discord and record
-  the attachment dimensions reported or retained by each destination.
-- Physically attach and detach an external display during selection and just
-  before capture. Software cannot reproduce the same WindowServer transition
-  with sufficient confidence.
+The following evidence must be collected on a Release build. Do not mark the
+corresponding tasks complete until every applicable row has a recorded result.
+
+### Paste-Destination Compatibility
+
+For each destination, capture a known image, record its PNG dimensions from
+CapDeck Preview, paste it without converting or re-saving it, then record the
+dimensions reported by the destination or by a downloaded attachment. If the
+destination does not expose dimensions, record `Not exposed` and confirm
+whether it accepted the image as an attachment.
+
+| Destination | Destination version | Source PNG dimensions | Retained dimensions | Accepted as image | Date / tester | Result |
+| --- | --- | --- | --- | --- | --- | --- |
+| ChatGPT | Not run | — | — | — | — | Pending |
+| Codex | Not run | — | — | — | — | Pending |
+| Claude | Not run | — | — | — | — | Pending |
+| Messenger | Not run | — | — | — | — | Pending |
+| Slack | Not run | — | — | — | — | Pending |
+| Discord | Not run | — | — | — | — | Pending |
+
+### Display-Transition Compatibility
+
+Physically attach and detach an external display during selection and
+immediately before capture on mixed 1x and 2x displays. Software cannot
+reproduce the corresponding WindowServer transition with sufficient
+confidence. For each run, record the capture mode, the transition timing, and
+whether CapDeck cancels safely or produces a clipboard image with the expected
+dimensions.
+
+| Display setup | Capture mode | Transition timing | Expected / actual outcome | Date / tester | Result |
+| --- | --- | --- | --- | --- | --- |
+| Mixed 1x + 2x | Region | Attach during selection | Not run | — | Pending |
+| Mixed 1x + 2x | Region | Detach during selection | Not run | — | Pending |
+| Mixed 1x + 2x | Full Screen | Attach immediately before capture | Not run | — | Pending |
+| Mixed 1x + 2x | Full Screen | Detach immediately before capture | Not run | — | Pending |
+
+### Additional Hardware / macOS Matrix
+
+Repeat the paste-destination and display-transition checks on each additional
+supported macOS 14+ environment. Record the Mac model, macOS version, and
+whether every applicable check passed.
+
+| Mac model | macOS version | Paste matrix | Display-transition matrix | Date / tester | Result |
+| --- | --- | --- | --- | --- | --- |
+| Not run | — | Pending | Pending | — | Pending |

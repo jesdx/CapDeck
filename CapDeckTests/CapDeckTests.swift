@@ -850,6 +850,13 @@ struct CaptureSavingTests {
     }
 
     @Test
+    func filenamePatternRejectsLeadingDotHiddenFiles() {
+        #expect(FilenamePattern.validate(".hidden") == .leadingDot)
+        #expect(FilenamePattern.validate("  .{date}") == .leadingDot)
+        #expect(FilenamePattern.validate("CapDeck-{date}") == nil)
+    }
+
+    @Test
     func encodesPNGAndJPEGAtOriginalPixelDimensions() throws {
         let context = try #require(
             CGContext(
