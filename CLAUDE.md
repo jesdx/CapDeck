@@ -28,7 +28,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer Scripts/build-release.s
 
 Run to launch: open the project in Xcode, select the `CapDeck` scheme + a local Mac destination, Run, then use the menu-bar mark. Default global shortcuts (active while any app is focused): `Ctrl+Shift+J` region, `Ctrl+Shift+K` window, `Ctrl+Shift+L` full screen, `Ctrl+Shift+9` history. First capture triggers the macOS Screen Recording permission prompt.
 
-Lint/format: SwiftFormat (`.swiftformat`, 4-space indent, `before-first` arg wrapping, trailing commas) and SwiftLint (`.swiftlint.yml`). `force_unwrapping` is an opt-in rule and force unwraps/`try!` are disallowed in production code — the release-build config also enforces `NeverForceUnwrap`/`NeverUseForceTry`.
+Lint/format: SwiftFormat and SwiftLint (`.swiftlint.yml`); CI runs both in lint mode. `force_unwrapping` is an opt-in SwiftLint rule, and force unwraps/`try!` are disallowed in production code.
 
 ## Architecture
 
