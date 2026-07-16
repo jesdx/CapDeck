@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-CapDeck is a native macOS screenshot app (Swift 6 / SwiftUI / AppKit) optimized for one path: **Capture → Clipboard → Paste → Done**. It is a menu-bar (`.accessory`) app, App Sandboxed, local-first, no account, targeting **macOS 14+** (required by `SCScreenshotManager`). Bundle id: `com.jesdx.capdeck`.
+CapDeck is a native macOS screenshot app (Swift 6 / SwiftUI / AppKit) optimized for one path: **Capture → Clipboard → Paste → Done**. It is a menu-bar (`.accessory`) app, App Sandboxed, local-first, no account, targeting **macOS 14+** (required by `SCScreenshotManager`). Bundle id: `com.jesdx.capdeck` (Debug builds use `com.jesdx.capdeck.debug` so dev builds do not share Screen Recording/TCC permission or UserDefaults with the installed release build).
 
 ## Build, test, run
 
@@ -18,9 +18,9 @@ xcodebuild -project CapDeck.xcodeproj -scheme CapDeck -destination 'platform=mac
 xcodebuild -project CapDeck.xcodeproj -scheme CapDeck \
   -destination 'platform=macOS' -only-testing:CapDeckTests test
 
-# Run a single test (target/class/method)
+# Run a single test (target/suite/method — suites live in CapDeckTests/<Feature>Tests.swift)
 xcodebuild -project CapDeck.xcodeproj -scheme CapDeck -destination 'platform=macOS' \
-  -only-testing:CapDeckTests/CapDeckTests/yourTestMethodName test
+  -only-testing:CapDeckTests/SelectionGeometryTests/normalizesDragInAnyDirection test
 
 # Local release archive (ad-hoc signed unless CAPDECK_SIGNING_IDENTITY is set)
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer Scripts/build-release.sh
