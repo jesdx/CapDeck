@@ -71,6 +71,14 @@ struct CaptureTextCopierTests {
         #expect(outcome == .failed)
     }
 
+    @Test
+    func statusMessagesReadClearlyAndCancellationStaysSilent() {
+        #expect(CopyTextOutcome.copied("hi").statusMessage == "Text copied")
+        #expect(CopyTextOutcome.noTextFound.statusMessage == "No text found")
+        #expect(CopyTextOutcome.failed.statusMessage == "Copy failed")
+        #expect(CopyTextOutcome.cancelled.statusMessage == nil)
+    }
+
     private func line(_ text: String, y: CGFloat) -> RecognizedTextLine {
         RecognizedTextLine(
             text: text,

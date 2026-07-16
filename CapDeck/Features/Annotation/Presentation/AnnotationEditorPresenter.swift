@@ -14,16 +14,19 @@ protocol AnnotationEditing {
 final class AnnotationEditorPresenter: NSObject, AnnotationEditing, NSWindowDelegate {
     private let clipboardService: ClipboardWriting
     private let saveService: CaptureSaving
+    private let textCopier: CaptureTextCopier
     private let configurationProvider: () -> CaptureSaveConfiguration
     private var editorPanel: NSPanel?
 
     init(
         clipboardService: ClipboardWriting,
         saveService: CaptureSaving,
+        textCopier: CaptureTextCopier,
         configurationProvider: @escaping () -> CaptureSaveConfiguration
     ) {
         self.clipboardService = clipboardService
         self.saveService = saveService
+        self.textCopier = textCopier
         self.configurationProvider = configurationProvider
     }
 
@@ -44,6 +47,16 @@ final class AnnotationEditorPresenter: NSObject, AnnotationEditing, NSWindowDele
                 } catch {
                     return error.localizedDescription
                 }
+            },
+            onCopyText: { [weak self] in
+                guard let self else { return nil }
+                let exported: CaptureResult
+                do {
+                    exported = try exportedResult(document, source: result)
+                } catch {
+                    return error.localizedDescription
+                }
+                return await textCopier.copyText(from: exported).statusMessage
             },
             onSave: { [weak self] in
                 guard let self else { return "Editor is no longer available" }
@@ -183,6 +196,7 @@ private enum AnnotationTool: String, CaseIterable, Identifiable {
 private struct AnnotationEditorView: View {
     @ObservedObject var document: AnnotationDocument
     let onCopy: () -> String
+    let onCopyText: () async -> String?
     let onSave: () async -> String
     let onClose: () -> Void
 
@@ -193,6 +207,7 @@ private struct AnnotationEditorView: View {
     @State private var textDraft = "Label"
     @State private var statusText = AnnotationTool.rectangle.instruction
     @State private var isSaving = false
+    @State private var isRecognizingText = false
 
     private var imageSize: CGSize {
         CGSize(width: document.sourceImage.width, height: document.sourceImage.height)
@@ -524,47 +539,6 @@ private struct AnnotationEditorView: View {
         }
     }
 
-    private var footer: some View {
-        HStack {
-            Text(statusText)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-            Spacer()
-
-            Button {
-                Task {
-                    isSaving = true
-                    statusText = await onSave()
-                    isSaving = false
-                }
-            } label: {
-                if isSaving {
-                    ProgressView().controlSize(.small)
-                } else {
-                    Label("Save Annotated…", systemImage: "square.and.arrow.down")
-                }
-            }
-            .disabled(isSaving)
-            .accessibilityLabel("Save annotated image")
-            .accessibilityIdentifier("annotation.save")
-
-            Button {
-                statusText = onCopy()
-            } label: {
-                Label("Copy Annotated", systemImage: "doc.on.doc")
-            }
-            .keyboardShortcut("c", modifiers: [.command, .shift])
-            .accessibilityLabel("Copy annotated image")
-            .accessibilityIdentifier("annotation.copy")
-
-            Button("Close", action: onClose)
-                .keyboardShortcut(.cancelAction)
-                .accessibilityIdentifier("annotation.close")
-        }
-        .padding(12)
-    }
-
     private var selectedText: TextAnnotation? {
         guard
             let element = document.element(id: selectedElementID),
@@ -715,5 +689,68 @@ private struct AnnotationEditorView: View {
             width: min(imageSize.width * 0.45, max(180, CGFloat(textDraft.count) * fontSize * 0.7)),
             height: fontSize * 2.6
         )
+    }
+}
+
+extension AnnotationEditorView {
+    var footer: some View {
+        HStack {
+            Text(statusText)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Spacer()
+
+            Button {
+                Task {
+                    isSaving = true
+                    statusText = await onSave()
+                    isSaving = false
+                }
+            } label: {
+                if isSaving {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Label("Save Annotated…", systemImage: "square.and.arrow.down")
+                }
+            }
+            .disabled(isSaving)
+            .accessibilityLabel("Save annotated image")
+            .accessibilityIdentifier("annotation.save")
+
+            Button {
+                Task {
+                    isRecognizingText = true
+                    if let message = await onCopyText() {
+                        statusText = message
+                    }
+                    isRecognizingText = false
+                }
+            } label: {
+                if isRecognizingText {
+                    ProgressView().controlSize(.small)
+                } else {
+                    Label("Copy Text", systemImage: "text.viewfinder")
+                }
+            }
+            .disabled(isRecognizingText)
+            .keyboardShortcut("t", modifiers: .command)
+            .accessibilityLabel("Copy recognized text")
+            .accessibilityIdentifier("annotation.copyText")
+
+            Button {
+                statusText = onCopy()
+            } label: {
+                Label("Copy Annotated", systemImage: "doc.on.doc")
+            }
+            .keyboardShortcut("c", modifiers: [.command, .shift])
+            .accessibilityLabel("Copy annotated image")
+            .accessibilityIdentifier("annotation.copy")
+
+            Button("Close", action: onClose)
+                .keyboardShortcut(.cancelAction)
+                .accessibilityIdentifier("annotation.close")
+        }
+        .padding(12)
     }
 }

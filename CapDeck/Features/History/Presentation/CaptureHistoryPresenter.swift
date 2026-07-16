@@ -17,6 +17,7 @@ final class CaptureHistoryPresenter: NSObject, CaptureHistoryPresenting, NSWindo
     private let clipboardService: ClipboardWriting
     private let previewPresenter: CapturePreviewPresenting
     private let saveService: CaptureSaving
+    private let textCopier: CaptureTextCopier
     private let configurationProvider: () -> CaptureSaveConfiguration
     private var historyPanel: NSPanel?
 
@@ -25,12 +26,14 @@ final class CaptureHistoryPresenter: NSObject, CaptureHistoryPresenting, NSWindo
         clipboardService: ClipboardWriting,
         previewPresenter: CapturePreviewPresenting,
         saveService: CaptureSaving,
+        textCopier: CaptureTextCopier,
         configurationProvider: @escaping () -> CaptureSaveConfiguration
     ) {
         self.store = store
         self.clipboardService = clipboardService
         self.previewPresenter = previewPresenter
         self.saveService = saveService
+        self.textCopier = textCopier
         self.configurationProvider = configurationProvider
     }
 
@@ -58,6 +61,10 @@ final class CaptureHistoryPresenter: NSObject, CaptureHistoryPresenting, NSWindo
                 } catch {
                     return error.localizedDescription
                 }
+            },
+            onCopyText: { [weak self] result in
+                guard let self else { return nil }
+                return await textCopier.copyText(from: result).statusMessage
             },
             onSave: { [weak self] result in
                 guard let self else { return "History is no longer available" }
@@ -137,11 +144,13 @@ private struct CaptureHistoryView: View {
     @ObservedObject var store: CaptureHistoryStore
     let onPreview: (CaptureResult) -> Void
     let onCopy: (CaptureResult) -> String
+    let onCopyText: (CaptureResult) async -> String?
     let onSave: (CaptureResult) async -> String
     let onClose: () -> Void
 
     @State private var statusText = "History stays in memory until CapDeck quits."
     @State private var savingEntryID: UUID?
+    @State private var recognizingEntryID: UUID?
     @State private var isConfirmingClear = false
 
     var body: some View {
@@ -242,46 +251,7 @@ private struct CaptureHistoryView: View {
 
             Spacer(minLength: 12)
 
-            VStack(alignment: .trailing, spacing: 8) {
-                HStack(spacing: 8) {
-                    Button("Preview") {
-                        onPreview(entry.result)
-                    }
-                    .accessibilityLabel("Preview history capture")
-                    .accessibilityIdentifier("history.preview.\(entry.id)")
-
-                    Button("Copy") {
-                        statusText = onCopy(entry.result)
-                    }
-                    .accessibilityLabel("Copy history capture")
-                    .accessibilityIdentifier("history.copy.\(entry.id)")
-
-                    Button {
-                        Task {
-                            savingEntryID = entry.id
-                            statusText = await onSave(entry.result)
-                            savingEntryID = nil
-                        }
-                    } label: {
-                        if savingEntryID == entry.id {
-                            ProgressView().controlSize(.small)
-                        } else {
-                            Text("Save As…")
-                        }
-                    }
-                    .disabled(savingEntryID != nil)
-                    .accessibilityLabel("Save history capture")
-                    .accessibilityIdentifier("history.save.\(entry.id)")
-                }
-
-                Button("Remove", role: .destructive) {
-                    store.remove(id: entry.id)
-                    statusText = "History item removed"
-                }
-                .buttonStyle(.borderless)
-                .accessibilityLabel("Remove history capture")
-                .accessibilityIdentifier("history.remove.\(entry.id)")
-            }
+            rowActions(entry)
         }
         .padding(12)
         .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 12))
@@ -289,6 +259,68 @@ private struct CaptureHistoryView: View {
         .accessibilityLabel(
             "Capture \(entry.result.pixelWidth) by \(entry.result.pixelHeight), \(entry.result.timestamp.formatted())"
         )
+    }
+
+    private func rowActions(_ entry: CaptureHistoryEntry) -> some View {
+        VStack(alignment: .trailing, spacing: 8) {
+            HStack(spacing: 8) {
+                Button("Preview") {
+                    onPreview(entry.result)
+                }
+                .accessibilityLabel("Preview history capture")
+                .accessibilityIdentifier("history.preview.\(entry.id)")
+
+                Button("Copy") {
+                    statusText = onCopy(entry.result)
+                }
+                .accessibilityLabel("Copy history capture")
+                .accessibilityIdentifier("history.copy.\(entry.id)")
+
+                Button {
+                    Task {
+                        recognizingEntryID = entry.id
+                        if let message = await onCopyText(entry.result) {
+                            statusText = message
+                        }
+                        recognizingEntryID = nil
+                    }
+                } label: {
+                    if recognizingEntryID == entry.id {
+                        ProgressView().controlSize(.small)
+                    } else {
+                        Text("Copy Text")
+                    }
+                }
+                .disabled(recognizingEntryID != nil)
+                .accessibilityLabel("Copy recognized text from history capture")
+                .accessibilityIdentifier("history.copyText.\(entry.id)")
+
+                Button {
+                    Task {
+                        savingEntryID = entry.id
+                        statusText = await onSave(entry.result)
+                        savingEntryID = nil
+                    }
+                } label: {
+                    if savingEntryID == entry.id {
+                        ProgressView().controlSize(.small)
+                    } else {
+                        Text("Save As…")
+                    }
+                }
+                .disabled(savingEntryID != nil)
+                .accessibilityLabel("Save history capture")
+                .accessibilityIdentifier("history.save.\(entry.id)")
+            }
+
+            Button("Remove", role: .destructive) {
+                store.remove(id: entry.id)
+                statusText = "History item removed"
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel("Remove history capture")
+            .accessibilityIdentifier("history.remove.\(entry.id)")
+        }
     }
 
     private var footer: some View {

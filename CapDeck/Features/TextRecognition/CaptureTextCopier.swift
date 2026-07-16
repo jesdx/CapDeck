@@ -7,6 +7,18 @@ enum CopyTextOutcome: Equatable {
     case noTextFound
     case cancelled
     case failed
+
+    /// Short status line shared by the windowed presenters (History, Annotation
+    /// editor). `nil` means "leave the current status untouched" — used for a
+    /// cancellation, which is a normal outcome rather than an error.
+    var statusMessage: String? {
+        switch self {
+        case .copied: "Text copied"
+        case .noTextFound: "No text found"
+        case .cancelled: nil
+        case .failed: "Copy failed"
+        }
+    }
 }
 
 /// Orchestrates recognizing text in a capture and placing it on the clipboard.
