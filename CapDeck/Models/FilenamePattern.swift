@@ -3,6 +3,7 @@ import Foundation
 enum FilenamePatternError: LocalizedError, Equatable {
     case empty
     case invalidCharacter(Character)
+    case leadingDot
     case unsupportedToken(String)
 
     var errorDescription: String? {
@@ -11,6 +12,8 @@ enum FilenamePatternError: LocalizedError, Equatable {
             "Filename pattern cannot be empty."
         case let .invalidCharacter(character):
             "Filename pattern cannot contain ‘\(character)’ characters."
+        case .leadingDot:
+            "Filename pattern cannot start with a ‘.’ (that would create a hidden file)."
         case let .unsupportedToken(token):
             "Unsupported filename token: {\(token)}."
         }
@@ -27,6 +30,12 @@ enum FilenamePattern {
 
         for character in ["/", ":"] where trimmed.contains(character) {
             return .invalidCharacter(Character(character))
+        }
+
+        // A leading "." produces a hidden file. Supported tokens all render to
+        // digits, so checking the pattern's first character is sufficient.
+        if trimmed.hasPrefix(".") {
+            return .leadingDot
         }
 
         let tokenExpression = try? NSRegularExpression(pattern: #"\{([^{}]+)\}"#)
