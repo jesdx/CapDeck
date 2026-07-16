@@ -192,8 +192,24 @@ Never preview and Never Save are independent settings.
   silent failure.
 - Escape during selection produces no capture side effects.
 
-## 7. Out of Scope for MVP
+## 7. Text Recognition (Copy Text)
 
-OCR, QR detection, pinning, scrolling capture, screen/GIF recording, cloud sync,
+Post-MVP, V2. The full Preview window offers a **Copy Text** action (⌘T) that
+recognizes text in the capture with Apple Vision and places the plain-text
+result on the clipboard. It is fully on-device — no network, nothing leaves the
+machine — and runs only when the user invokes it, not on every capture.
+
+- Recognition reads the canonical capture image, not the fit-scaled preview.
+- Success copies the recognized text and shows "Text copied"; the Preview window
+  stays open so the user can also copy or annotate the image.
+- A capture with no readable text shows "No text found" and leaves the clipboard
+  untouched.
+- Language is detected automatically; scripts supported by the OS Vision build
+  (including Thai on macOS 14+) are recognized without configuration.
+- Consistent with the privacy rules, recognized text is never logged.
+
+## 8. Out of Scope for MVP
+
+QR detection, pinning, scrolling capture, screen/GIF recording, cloud sync,
 share links, and AI-assisted annotation are roadmap features and do not block
 the first usable release.

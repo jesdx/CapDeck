@@ -57,7 +57,8 @@ CapDeck/
 │   ├── MenuBar/
 │   ├── Preview/             # Native preview panel presenter
 │   ├── Annotation/          # Document + native editor presenter
-│   └── History/             # Store + native history panel presenter
+│   ├── History/             # Store + native history panel presenter
+│   └── TextRecognition/     # CaptureTextCopier: OCR → clipboard workflow
 ├── Services/
 │   ├── CaptureService/
 │   ├── ClipboardService/
@@ -66,8 +67,8 @@ CapDeck/
 │   ├── LaunchAtLoginService/
 │   ├── PermissionService/
 │   ├── ShortcutService/
-│   ├── UpdateService/
-│   └── OCRService/          # Added when V2 begins
+│   ├── TextRecognitionService/ # Vision VNRecognizeTextRequest boundary
+│   └── UpdateService/
 └── Assets.xcassets/
 ```
 

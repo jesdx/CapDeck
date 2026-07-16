@@ -479,10 +479,18 @@ private final class CaptureServiceFake: ScreenCapturing {
 @MainActor
 private final class ClipboardServiceFake: ClipboardWriting {
     private(set) var writeCount = 0
+    private(set) var writtenText: [String] = []
     var error: Error?
 
     func write(_: CaptureResult) throws {
         writeCount += 1
+        if let error {
+            throw error
+        }
+    }
+
+    func writeText(_ text: String) throws {
+        writtenText.append(text)
         if let error {
             throw error
         }

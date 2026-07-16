@@ -102,7 +102,13 @@ have actually been reviewed.
 
 ## V2
 
-- [ ] OCR with Vision
+- [~] OCR with Vision
+  - [x] Slice 1: `TextRecognizing` service (Vision) + `CaptureTextCopier`
+    workflow + "Copy Text" action in the full Preview window.
+  - [ ] Slice 2: "Copy Text" in History and the Annotation editor (OCR the
+    cropped region when a crop is set).
+  - [ ] Slice 3: dedicated "Capture Text" shortcut — region → OCR →
+    clipboard with no preview.
 - [ ] QR code detection
 - [ ] Floating image window
 - [ ] Pin image behavior
