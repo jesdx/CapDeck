@@ -161,6 +161,11 @@ final class CaptureCoordinator: ObservableObject {
         guard await ensureAuthorizedOrDeny() else { return }
 
         do {
+            if settings.captureDelay > 0 {
+                state = .delaying(seconds: Int(settings.captureDelay.rounded()))
+                try await Task.sleep(for: .seconds(settings.captureDelay))
+            }
+
             state = .selecting(.region)
             guard let request = try await selectionPresenter.selectRegion() else {
                 state = .cancelled
@@ -181,9 +186,13 @@ final class CaptureCoordinator: ObservableObject {
                 state = .noTextFound
             case .cancelled:
                 state = .cancelled
-            case .failed:
+            case .recognitionFailed:
                 state = .failed(
                     message: TextRecognitionServiceError.recognitionFailed.localizedDescription
+                )
+            case .clipboardFailed:
+                state = .failed(
+                    message: ClipboardServiceError.textWriteFailed.localizedDescription
                 )
             }
         } catch {

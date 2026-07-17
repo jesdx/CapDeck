@@ -2,9 +2,15 @@ import AppKit
 
 enum ClipboardServiceError: LocalizedError {
     case writeFailed
+    case textWriteFailed
 
     var errorDescription: String? {
-        "The screenshot could not be copied to the clipboard."
+        switch self {
+        case .writeFailed:
+            "The screenshot could not be copied to the clipboard."
+        case .textWriteFailed:
+            "The recognized text could not be copied to the clipboard."
+        }
     }
 }
 
@@ -45,7 +51,7 @@ final class PasteboardClipboardService: ClipboardWriting {
         pasteboard.clearContents()
         pasteboard.declareTypes([.string], owner: nil)
         guard pasteboard.setString(text, forType: .string) else {
-            throw ClipboardServiceError.writeFailed
+            throw ClipboardServiceError.textWriteFailed
         }
     }
 }
