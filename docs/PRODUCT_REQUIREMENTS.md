@@ -209,7 +209,10 @@ capture.
   step: select a region, recognize its text, and place it on the clipboard —
   with no image on the clipboard, no saved file, no preview, and no history
   entry. The menu bar shows "Recognizing text…", then "Text copied to
-  clipboard" or "No text found in selection".
+  clipboard" or "No text found in selection". The configured capture delay
+  applies before selection, the same as every other capture mode.
+- Failure messages distinguish the two failure points: text that could not be
+  recognized versus recognized text that could not be placed on the clipboard.
 - Success copies the recognized text and shows "Text copied"; the Preview window
   stays open so the user can also copy or annotate the image.
 - A capture with no readable text shows "No text found" and leaves the clipboard

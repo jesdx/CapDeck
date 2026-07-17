@@ -196,7 +196,7 @@ final class CapturePreviewPresenter: NSObject, CapturePreviewPresenting, NSWindo
                 }
             },
             onCopyText: { [weak self] in
-                guard let self else { return .failed }
+                guard let self else { return .recognitionFailed }
                 return await textCopier.copyText(from: result)
             },
             onSave: { [weak self] in
@@ -463,18 +463,8 @@ private struct CapturePreviewView: View {
                 Button {
                     Task {
                         isRecognizingText = true
-                        let outcome = await onCopyText()
+                        copyStatus = await onCopyText().statusMessage
                         isRecognizingText = false
-                        switch outcome {
-                        case .copied:
-                            copyStatus = "Text copied"
-                        case .noTextFound:
-                            copyStatus = "No text found"
-                        case .cancelled:
-                            copyStatus = nil
-                        case .failed:
-                            copyStatus = "Copy failed"
-                        }
                     }
                 } label: {
                     if isRecognizingText {

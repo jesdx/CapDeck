@@ -43,6 +43,20 @@ struct PasteboardClipboardServiceTests {
     }
 
     @Test
+    func writeTextPlacesAPlainStringRepresentation() throws {
+        let pasteboard = NSPasteboard(
+            name: NSPasteboard.Name("CapDeckTextTests.\(UUID().uuidString)")
+        )
+        let service = PasteboardClipboardService(pasteboard: pasteboard)
+
+        try service.writeText("Recognized ข้อความ")
+
+        #expect(pasteboard.string(forType: .string) == "Recognized ข้อความ")
+        #expect(pasteboard.types?.first == .string)
+        #expect(pasteboard.data(forType: .png) == nil)
+    }
+
+    @Test
     func losslessPNGDoesNotBlendAdjacentPixels() throws {
         let pasteboard = NSPasteboard(
             name: NSPasteboard.Name("CapDeckPixelTests.\(UUID().uuidString)")
