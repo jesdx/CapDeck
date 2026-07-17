@@ -4,6 +4,27 @@
 
 _No unreleased changes._
 
+## 1.3.0 — 2026-07-17
+
+### Added
+
+- On-device text recognition with Apple Vision. **Copy Text** is available in
+  the full Preview window (⌘T), on every Capture History row, and in the
+  Annotation editor. In the editor, a crop restricts recognition to the
+  cropped region and a blur keeps the text it covers out of the result.
+- **Capture Text** global shortcut (default ⌃⇧T): select a region and the
+  recognized text lands on the clipboard — with no image on the clipboard, no
+  saved file, no preview, and no history entry. Recognition runs entirely on
+  this Mac and languages are detected automatically.
+- Sidebar-style Settings window with an app-identity header, section list,
+  and version footer, replacing the previous tab layout.
+
+### Changed
+
+- Debug builds now use the separate bundle identifier
+  `com.jesdx.capdeck.debug`, so development builds no longer share the Screen
+  Recording permission or preferences with the installed release app.
+
 ## 1.2.3 — 2026-07-15
 
 ### Fixed
