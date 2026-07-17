@@ -6,34 +6,18 @@ struct SettingsView: View {
     @ObservedObject var globalShortcuts: GlobalShortcutService
     @ObservedObject var launchAtLogin: LaunchAtLoginService
     @ObservedObject var softwareUpdate: SoftwareUpdateService
+    @State private var selectedSection: SettingsSection? = .general
     @State private var recordingAction: GlobalShortcutAction?
     @State private var saveFolderError: String?
     @State private var isConfirmingRestore = false
 
     var body: some View {
-        TabView {
-            generalPane
-                .tabItem {
-                    Label("General", systemImage: "gearshape")
-                }
-
-            capturePane
-                .tabItem {
-                    Label("Capture", systemImage: "camera.viewfinder")
-                }
-
-            shortcutsPane
-                .tabItem {
-                    Label("Shortcuts", systemImage: "keyboard")
-                }
-
-            afterCapturePane
-                .tabItem {
-                    Label("After Capture", systemImage: "sparkles.rectangle.stack")
-                }
+        HStack(spacing: 0) {
+            sidebar
+            Divider()
+            detailPane
         }
-        .frame(width: 600, height: 520)
-        .navigationTitle("CapDeck Settings")
+        .frame(width: 760, height: 520)
         .onAppear {
             launchAtLogin.refresh()
         }
@@ -49,6 +33,98 @@ struct SettingsView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This resets capture, saving, preview, and shortcut settings. Existing image files are not deleted.")
+        }
+    }
+
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 10) {
+                Image(nsImage: NSApp.applicationIconImage)
+                    .resizable()
+                    .frame(width: 32, height: 32)
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("CapDeck")
+                        .font(.headline)
+                    Text("Settings")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+
+            List(SettingsSection.allCases, selection: $selectedSection) { section in
+                Label(section.title, systemImage: section.systemImage)
+                    .tag(section)
+                    .accessibilityIdentifier(section.accessibilityIdentifier)
+            }
+            .listStyle(.sidebar)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("© 2026 Jesdx. All rights reserved.")
+                Text("CapDeck \(softwareUpdate.displayVersion)")
+            }
+            .font(.caption2)
+            .foregroundStyle(.tertiary)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 14)
+        }
+        .frame(width: 210)
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+
+    @ViewBuilder
+    private var detailPane: some View {
+        switch selectedSection ?? .general {
+        case .general:
+            generalPane
+        case .capture:
+            capturePane
+        case .shortcuts:
+            shortcutsPane
+        case .afterCapture:
+            afterCapturePane
+        }
+    }
+
+    private enum SettingsSection: CaseIterable, Hashable, Identifiable {
+        case general
+        case capture
+        case shortcuts
+        case afterCapture
+
+        var id: Self {
+            self
+        }
+
+        var title: String {
+            switch self {
+            case .general: "General"
+            case .capture: "Capture"
+            case .shortcuts: "Shortcuts"
+            case .afterCapture: "After Capture"
+            }
+        }
+
+        var systemImage: String {
+            switch self {
+            case .general: "gearshape"
+            case .capture: "camera.viewfinder"
+            case .shortcuts: "keyboard"
+            case .afterCapture: "sparkles.rectangle.stack"
+            }
+        }
+
+        /// Stable identifier for UI tests, decoupled from the display title.
+        var accessibilityIdentifier: String {
+            switch self {
+            case .general: "settings.sidebar.general"
+            case .capture: "settings.sidebar.capture"
+            case .shortcuts: "settings.sidebar.shortcuts"
+            case .afterCapture: "settings.sidebar.afterCapture"
+            }
         }
     }
 

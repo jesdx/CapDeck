@@ -15,7 +15,9 @@ final class CapDeckUITests: XCTestCase {
 
         let settingsWindow = app.windows.firstMatch
         XCTAssertTrue(settingsWindow.waitForExistence(timeout: 5))
-        app.buttons["General"].click()
+        // The settings sidebar is a selectable List, so rows are not buttons —
+        // select them by their stable accessibility identifiers instead.
+        sidebarItem(app, "settings.sidebar.general").click()
         XCTAssertTrue(app.staticTexts["Clipboard-first preset"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.staticTexts["Show CapDeck in the menu bar"].exists)
         XCTAssertTrue(app.staticTexts["Software Updates"].exists)
@@ -23,14 +25,21 @@ final class CapDeckUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Automatically check for updates"].exists)
         XCTAssertTrue(app.buttons["Check for Updates…"].exists)
 
-        app.buttons["Capture"].click()
+        sidebarItem(app, "settings.sidebar.capture").click()
         XCTAssertTrue(app.staticTexts["File Saving"].waitForExistence(timeout: 2))
 
-        app.buttons["Shortcuts"].click()
+        sidebarItem(app, "settings.sidebar.shortcuts").click()
         XCTAssertTrue(app.staticTexts["Global Shortcuts"].waitForExistence(timeout: 2))
 
-        app.buttons["After Capture"].click()
+        sidebarItem(app, "settings.sidebar.afterCapture").click()
         XCTAssertTrue(app.staticTexts["Clipboard"].waitForExistence(timeout: 2))
+    }
+
+    /// Finds a settings sidebar row by its accessibility identifier regardless of
+    /// the element type XCUI reports the List row as (cell, static text, …).
+    @MainActor
+    private func sidebarItem(_ app: XCUIApplication, _ identifier: String) -> XCUIElement {
+        app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
 
     @MainActor
