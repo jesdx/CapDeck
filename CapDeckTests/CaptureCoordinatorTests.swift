@@ -363,19 +363,69 @@ struct CaptureCoordinatorTests {
         #expect(fixture.coordinator.state == .permissionDenied)
     }
 
+    @Test
+    func captureTextHonorsTheConfiguredCaptureDelay() async throws {
+        let fixture = try makeFixture(
+            autoCopy: true,
+            permissionGranted: true,
+            recognizedText: RecognizedText(lines: [
+                RecognizedTextLine(
+                    text: "Delayed",
+                    boundingBox: CGRect(x: 0, y: 0, width: 10, height: 10),
+                    confidence: 1
+                ),
+            ]),
+            captureDelay: 0.2
+        )
+
+        let start = ContinuousClock.now
+        await fixture.coordinator.captureText()
+        let elapsed = start.duration(to: .now)
+
+        #expect(elapsed >= .seconds(0.2))
+        #expect(fixture.coordinator.state == .textCopied)
+    }
+
+    @Test
+    func captureTextClipboardFailureReportsClipboardNotRecognitionError() async throws {
+        let fixture = try makeFixture(
+            autoCopy: true,
+            permissionGranted: true,
+            recognizedText: RecognizedText(lines: [
+                RecognizedTextLine(
+                    text: "Hello",
+                    boundingBox: CGRect(x: 0, y: 0, width: 10, height: 10),
+                    confidence: 1
+                ),
+            ])
+        )
+        fixture.clipboardService.error = ClipboardServiceError.textWriteFailed
+
+        await fixture.coordinator.captureText()
+
+        #expect(
+            fixture.coordinator.state
+                == .failed(
+                    message: "The recognized text could not be copied to the clipboard."
+                )
+        )
+    }
+
     private func makeFixture(
         autoCopy: Bool,
         permissionGranted: Bool,
         previewPolicy: PreviewPolicy = .autoHide,
         savePolicy: SavePolicy = .never,
         saveOutcome: CaptureSaveOutcome = .skipped,
-        recognizedText: RecognizedText = .empty
+        recognizedText: RecognizedText = .empty,
+        captureDelay: TimeInterval = 0
     ) throws -> Fixture {
         let suiteName = "CaptureCoordinatorTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: suiteName))
         defaults.set(autoCopy, forKey: "settings.autoCopy")
         defaults.set(previewPolicy.rawValue, forKey: "settings.previewPolicy")
         defaults.set(savePolicy.rawValue, forKey: "settings.savePolicy")
+        defaults.set(captureDelay, forKey: "settings.captureDelay")
 
         let permissionService = PermissionServiceFake(isAuthorized: permissionGranted)
         let selectionService = SelectionServiceFake()

@@ -48,34 +48,36 @@ struct CaptureTextCopierTests {
     }
 
     @Test
-    func recognitionFailureMapsToFailure() async throws {
+    func recognitionFailureIsDistinguishedFromClipboardFailure() async throws {
         let recognizer = TextRecognizerFake(error: TextRecognitionServiceError.recognitionFailed)
         let clipboard = TextClipboardFake()
         let copier = CaptureTextCopier(recognizer: recognizer, clipboardService: clipboard)
 
         let outcome = try await copier.copyText(from: makeResult())
 
-        #expect(outcome == .failed)
+        #expect(outcome == .recognitionFailed)
+        #expect(clipboard.writtenText.isEmpty)
     }
 
     @Test
-    func clipboardFailureMapsToFailure() async throws {
+    func clipboardFailureAfterSuccessfulRecognitionMapsToClipboardFailed() async throws {
         let recognizer = TextRecognizerFake(
             result: RecognizedText(lines: [line("Text", y: 0)])
         )
-        let clipboard = TextClipboardFake(error: ClipboardServiceError.writeFailed)
+        let clipboard = TextClipboardFake(error: ClipboardServiceError.textWriteFailed)
         let copier = CaptureTextCopier(recognizer: recognizer, clipboardService: clipboard)
 
         let outcome = try await copier.copyText(from: makeResult())
 
-        #expect(outcome == .failed)
+        #expect(outcome == .clipboardFailed)
     }
 
     @Test
     func statusMessagesReadClearlyAndCancellationStaysSilent() {
         #expect(CopyTextOutcome.copied("hi").statusMessage == "Text copied")
         #expect(CopyTextOutcome.noTextFound.statusMessage == "No text found")
-        #expect(CopyTextOutcome.failed.statusMessage == "Copy failed")
+        #expect(CopyTextOutcome.recognitionFailed.statusMessage == "Text recognition failed")
+        #expect(CopyTextOutcome.clipboardFailed.statusMessage == "Copy failed")
         #expect(CopyTextOutcome.cancelled.statusMessage == nil)
     }
 

@@ -6,7 +6,8 @@ enum CopyTextOutcome: Equatable {
     case copied(String)
     case noTextFound
     case cancelled
-    case failed
+    case recognitionFailed
+    case clipboardFailed
 
     /// Short status line shared by the windowed presenters (History, Annotation
     /// editor). `nil` means "leave the current status untouched" — used for a
@@ -16,7 +17,8 @@ enum CopyTextOutcome: Equatable {
         case .copied: "Text copied"
         case .noTextFound: "No text found"
         case .cancelled: nil
-        case .failed: "Copy failed"
+        case .recognitionFailed: "Text recognition failed"
+        case .clipboardFailed: "Copy failed"
         }
     }
 }
@@ -41,7 +43,7 @@ final class CaptureTextCopier {
         } catch is CancellationError {
             return .cancelled
         } catch {
-            return .failed
+            return .recognitionFailed
         }
 
         let text = recognized.joinedText
@@ -51,7 +53,7 @@ final class CaptureTextCopier {
             try clipboardService.writeText(text)
             return .copied(text)
         } catch {
-            return .failed
+            return .clipboardFailed
         }
     }
 }
